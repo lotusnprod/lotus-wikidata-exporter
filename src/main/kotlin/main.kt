@@ -44,7 +44,10 @@ fun main(args: Array<String>) {
         }
     }
 
-    class Query : Subcommand("query", "Run a SPARQL SELECT query on the local instance and get the result") {
+    class Query : Subcommand(
+        "query",
+        "Run a SPARQL SELECT query on the local instance or directly on WD"
+    ) {
         val queryFilename by argument(
             ArgType.String,
             "queryFile",
@@ -56,6 +59,12 @@ fun main(args: Array<String>) {
             "o",
             "File with the SPARQL query"
         )
+        val direct by option(
+            ArgType.Boolean,
+            "direct",
+            "d",
+            "Connect directly to WikiData, do not use the local instance"
+        ).default(false)
 
         override fun execute() {
             val storeFile = File(store)
@@ -63,14 +72,14 @@ fun main(args: Array<String>) {
             val queryFile = File(queryFilename)
             val outputFile = outputFilename?.let { File(it) }
 
-            if (!storeFile.isDirectory)
+            if (!storeFile.isDirectory && !direct)
                 throw FileNotFoundException("Impossible to open the repository, did you run mirror?")
 
             if (!queryFile.exists())
                 throw FileNotFoundException("Impossible to open the query!")
 
             logger.info("Starting in querying mode into the repository: $store with the query file $queryFilename")
-            query(storeFile, queryFile, outputFile)
+            query(storeFile, queryFile, outputFile, direct = direct)
             commandRun = true
         }
     }

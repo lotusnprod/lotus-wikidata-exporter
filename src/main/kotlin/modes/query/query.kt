@@ -12,6 +12,7 @@ import net.nprod.wikidataLotusExporter.rdf.RDFRepository
 import net.nprod.wikidataLotusExporter.sparql.LOTUSQueries
 import org.eclipse.rdf4j.query.MalformedQueryException
 import org.eclipse.rdf4j.repository.RepositoryConnection
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
 import org.slf4j.LoggerFactory
 import java.io.BufferedWriter
 import java.io.File
@@ -30,15 +31,19 @@ fun RepositoryConnection.queryToTSV(tsvWriter: TsvWriter, query: String) {
     }
 }
 
-fun query(repositoryLocation: File, queryFile: File, outFile: File?) {
+fun query(repositoryLocation: File, queryFile: File, outFile: File?, direct: Boolean) {
     val logger = LoggerFactory.getLogger("query")
     val rdfRepository = RDFRepository(repositoryLocation)
-
+    val connection = if (direct) {
+        SPARQLRepository("https://query.wikidata.org/sparql").connection
+    } else {
+        rdfRepository.repository.connection
+    }
     val fileWriter = outFile?.bufferedWriter() ?: BufferedWriter(OutputStreamWriter(System.out))
     fileWriter.use {
         val tsvWriter = TsvWriter(fileWriter, TsvWriterSettings())
 
-        rdfRepository.repository.connection.use { connection ->
+        connection.use { connection ->
             val query = queryFile.readText().replace("#!WDDEFAULTIMPORTS", LOTUSQueries.prefixes)
 
             try {

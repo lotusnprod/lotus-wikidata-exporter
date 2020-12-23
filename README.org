@@ -29,6 +29,15 @@ This will output a TSV file to the standard output (so your console likely)
 ./gradlew -q run --args "query $PWD/queries/getAllCompoundsInChIKeys.sparql"
 #+END_SRC
 
+*** Running a query directly on WikiData
+
+There is also a way to do the query directly on WikiData
+
+#+BEGIN_SRC
+./gradlew -q run --args "query -d $PWD/queries/getAllCompoundsInChIKeys.sparql"
+#+END_SRC
+
+
 ** Installing and deploying on another machine
 
 #+BEGIN_SRC
