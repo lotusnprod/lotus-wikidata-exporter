@@ -5,3 +5,24 @@ that can be used by our website.
 
 It is made in Kotlin. All you need really is a JVM, and it should gather everything by itself.
 
+** Build
+
+#+BEGIN_SOURCE
+./gradlew build
+#+END_SOURCE
+
+** Usage
+
+*** Gather WikiData entries related to LOTUS locally
+
+This can take a variable amount of time depending on how loaded the WikiData servers are. On good days it is < 5 min
+
+#+BEGIN_SOURCE
+./gradlew -q run --args "mirror"
+#+END_SOURCE
+
+*** Running a query on your new local base
+
+#+BEGIN_SOURCE
+./gradlew -q run --args "query $PWD/queries/getAllCompoundsInChIKeys.sparql"
+#+END_SOURCE

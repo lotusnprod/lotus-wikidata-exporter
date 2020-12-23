@@ -67,6 +67,4 @@ fun mirror(repositoryLocation: File) {
     logger.info("Adding the compounds, taxon and reference info")
 
     logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} in the local RDF repository now")
-
-    logger.info("I'm done, go Kotlin \\o/")
 }

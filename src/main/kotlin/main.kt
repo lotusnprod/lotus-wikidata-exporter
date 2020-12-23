@@ -10,10 +10,13 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import kotlinx.cli.default
+import kotlinx.cli.required
 import net.nprod.wikidataLotusExporter.modes.mirror.mirror
+import net.nprod.wikidataLotusExporter.modes.query.query
 import org.eclipse.rdf4j.model.IRI
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.FileNotFoundException
 
 fun IRI.getIDfromIRI(): String = this.stringValue().split("/").last()
 
@@ -38,7 +41,34 @@ fun main(args: Array<String>) {
         }
     }
 
-    parser.subcommands(Mirror())
+    class Query : Subcommand("query", "Run a SPARQL SELECT query on the local instance and get the result") {
+        val queryFilename by argument(
+            ArgType.String, "queryFile", "File with the SPARQL query"
+        )
+        val outputFilename by option(
+            ArgType.String, "output", "o", "File with the SPARQL query"
+        )
+
+        override fun execute() {
+            val storeFile = File(store)
+
+
+            val queryFile = File(queryFilename)
+            val outputFile = outputFilename?.let { File(it) }
+
+            if (!storeFile.isDirectory)
+                throw FileNotFoundException("Impossible to open the repository, did you run mirror?")
+
+            if (!queryFile.exists())
+                throw FileNotFoundException("Impossible to open the query!")
+
+            logger.info("Starting in querying mode into the repository: $store with the query file $queryFilename")
+            query(storeFile, queryFile, outputFile)
+            commandRun = true
+        }
+    }
+
+    parser.subcommands(Mirror(), Query())
     parser.parse(args)
 
     if (!commandRun) logger.error("Please use at least one of the commands, check the help: -h")
