@@ -57,7 +57,18 @@ object LOTUSQueries {
         SELECT ?parenttaxon_id
         WHERE {
             VALUES ?id { %%IDS%% } 
-            ?id wdt:P171* ?parenttaxon_id.
+            ?id wdt:P171+ ?parenttaxon_id.
+        }
+        """.trimIndent()
+
+    val queryTaxoRanksInfo =
+        """$prefixes
+        CONSTRUCT {
+            ?id ?p ?o
+        }
+        WHERE {
+            ?id wdt:P31     wd:Q427626;
+                ?p          ?o.
         }
         """.trimIndent()
 

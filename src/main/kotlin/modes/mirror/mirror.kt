@@ -67,6 +67,9 @@ fun mirror(repositoryLocation: File) {
     logger.info("${irisToMirror.size} entries to mirror (${irisToMirror.size - oldCounter} due to taxon parents)")
     var count = 0
 
+    logger.info("Getting the taxonomic ranks info")
+    Repositories.graphQuery(sparqlRepository, LOTUSQueries.queryTaxoRanksInfo) { result -> fullEntries.addAll(result) }
+
     irisToMirror.chunked(CHUNCK_SIZE).map {
         val listOfCompounds = it.map { "wd:${it.getIDfromIRI()}" }.joinToString(" ")
         val compoundQuery = LOTUSQueries.mirrorQuery.replace("%%IDS%%", listOfCompounds)
