@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Copyright (c) 2020 Jonathan Bisson
+ */
+
 package net.nprod.wikidataLotusExporter.rdf
 
 import org.eclipse.rdf4j.repository.sail.SailRepository
@@ -7,16 +13,19 @@ import java.io.File
 
 /**
  * A local RDFRepository to store all the acquired SPARQL data
+ *
+ * We use that to make sure that we can access the repo. We may add
+ * the querying directly here as well if needed.
  */
-class RDFRepository(val location: File) {
+class RDFRepository(location: File) {
     val repository: SailRepository
-    val logger = LoggerFactory.getLogger(javaClass)
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     init {
-        logger.info("Loading old data")
         val file = location.also {
             if (!it.canWrite() || !it.canRead()) throw AccessDeniedException(it)
         }
-        repository = SailRepository(NativeStore(location))
+        logger.info("Opening the NativeStore at $file")
+        repository = SailRepository(NativeStore(file))
     }
 }

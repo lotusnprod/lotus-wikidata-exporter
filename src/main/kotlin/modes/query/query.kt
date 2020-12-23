@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Copyright (c) 2020 Jonathan Bisson
+ */
+
 package net.nprod.wikidataLotusExporter.modes.query
 
 import com.univocity.parsers.tsv.TsvWriter
@@ -5,10 +11,24 @@ import com.univocity.parsers.tsv.TsvWriterSettings
 import net.nprod.wikidataLotusExporter.rdf.RDFRepository
 import net.nprod.wikidataLotusExporter.sparql.LOTUSQueries
 import org.eclipse.rdf4j.query.MalformedQueryException
+import org.eclipse.rdf4j.repository.RepositoryConnection
 import org.slf4j.LoggerFactory
 import java.io.BufferedWriter
 import java.io.File
 import java.io.OutputStreamWriter
+
+/**
+ * Write the results from the SPARQL query to a TSV file
+ */
+fun RepositoryConnection.queryToTSV(tsvWriter: TsvWriter, query: String) {
+    this.prepareTupleQuery(query).evaluate().let { results ->
+        val bindingNames = results.bindingNames
+        tsvWriter.writeHeaders(bindingNames)
+        results.map { bindingSet ->
+            tsvWriter.writeRow(bindingNames.map { bindingSet.getBinding(it).value })
+        }
+    }
+}
 
 fun query(repositoryLocation: File, queryFile: File, outFile: File?) {
     val logger = LoggerFactory.getLogger("query")
@@ -16,20 +36,13 @@ fun query(repositoryLocation: File, queryFile: File, outFile: File?) {
 
     val fileWriter = outFile?.bufferedWriter() ?: BufferedWriter(OutputStreamWriter(System.out))
     fileWriter.use {
-        val writer = TsvWriter(fileWriter, TsvWriterSettings())
+        val tsvWriter = TsvWriter(fileWriter, TsvWriterSettings())
 
         rdfRepository.repository.connection.use { connection ->
-
             val query = queryFile.readText().replace("#!WDDEFAULTIMPORTS", LOTUSQueries.prefixes)
 
             try {
-                connection.prepareTupleQuery(query).evaluate().let { results ->
-                    val bindingNames = results.bindingNames
-                    writer.writeHeaders(bindingNames)
-                    results.map { bindingSet ->
-                        writer.writeRow(bindingNames.map { bindingSet.getBinding(it).value })
-                    }
-                }
+                connection.queryToTSV(tsvWriter, query)
             } catch (e: MalformedQueryException) {
                 logger.error("SPARQL error: ${e.cause}")
             }

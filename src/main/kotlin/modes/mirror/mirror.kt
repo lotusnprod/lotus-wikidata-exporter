@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Copyright (c) 2020 Jonathan Bisson
+ */
+
 package net.nprod.wikidataLotusExporter.modes.mirror
 
 import net.nprod.wikidataLotusExporter.getIDfromIRI
@@ -11,14 +17,17 @@ import org.eclipse.rdf4j.repository.util.Repositories
 import org.slf4j.LoggerFactory
 import java.io.File
 
+/**
+ * Size of the blocks of values for each SPARQL query
+ */
+const val CHUNCK_SIZE = 1000
+
 fun mirror(repositoryLocation: File) {
     val logger = LoggerFactory.getLogger("mirror")
     val sparqlRepository = SPARQLRepository("https://query.wikidata.org/sparql")
     val rdfRepository = RDFRepository(repositoryLocation)
 
     logger.info("Let's go")
-
-    val vf = rdfRepository.repository.connection.valueFactory
 
     val fullEntries = mutableListOf<Statement>()
     Repositories.graphQuery(sparqlRepository, LOTUSQueries.queryCompoundTaxonRef) { result ->
@@ -31,36 +40,39 @@ fun mirror(repositoryLocation: File) {
 
     val irisToMirror = mutableSetOf<IRI>()
     val taxasToParentMirror = mutableSetOf<IRI>()
-// We add all the ids to a set so we can mirror them
+    // We add all the ids to a set so we can mirror them
     Repositories.tupleQuery(sparqlRepository, LOTUSQueries.queryIdsLocal) { result: TupleQueryResult ->
-        irisToMirror.addAll(result.flatMap { bindingSet ->
-            val compoundID: IRI = bindingSet.getBinding("compound_id").value as IRI
-            val taxonID: IRI = bindingSet.getBinding("taxon_id").value as IRI
-            val referenceID: IRI = bindingSet.getBinding("reference_id").value as IRI
-            taxasToParentMirror.add(taxonID)
-            listOf(compoundID, taxonID, referenceID)
-        })
+        irisToMirror.addAll(
+            result.flatMap { bindingSet ->
+                val compoundID: IRI = bindingSet.getBinding("compound_id").value as IRI
+                val taxonID: IRI = bindingSet.getBinding("taxon_id").value as IRI
+                val referenceID: IRI = bindingSet.getBinding("reference_id").value as IRI
+                taxasToParentMirror.add(taxonID)
+                listOf(compoundID, taxonID, referenceID)
+            }
+        )
     }
-    val CHUNK_SIZE = 1000
+
     logger.info("Getting the taxa relations")
     val oldCounter = irisToMirror.size
-    taxasToParentMirror.chunked(CHUNK_SIZE).map {
+    taxasToParentMirror.chunked(CHUNCK_SIZE).map {
         val listOfTaxa = it.map { "wd:${it.getIDfromIRI()}" }.joinToString(" ")
         val modifiedQuery = LOTUSQueries.queryTaxonParents.replace("%%IDS%%", listOfTaxa)
         Repositories.tupleQuery(sparqlRepository, modifiedQuery) { result: TupleQueryResult ->
             irisToMirror.addAll(
-                result.map { bindingSet -> bindingSet.getBinding("parenttaxon_id").value as IRI })
+                result.map { bindingSet -> bindingSet.getBinding("parenttaxon_id").value as IRI }
+            )
         }
     }
-    logger.info("We have ${irisToMirror.size} entries to mirror (${irisToMirror.size - oldCounter} are due to taxon parenting)")
+    logger.info("${irisToMirror.size} entries to mirror (${irisToMirror.size - oldCounter} due to taxon parents)")
     var count = 0
 
-    irisToMirror.chunked(CHUNK_SIZE).map {
+    irisToMirror.chunked(CHUNCK_SIZE).map {
         val listOfCompounds = it.map { "wd:${it.getIDfromIRI()}" }.joinToString(" ")
         val compoundQuery = LOTUSQueries.mirrorQuery.replace("%%IDS%%", listOfCompounds)
         Repositories.graphQuery(sparqlRepository, compoundQuery) { result -> fullEntries.addAll(result) }
         count += it.size
-        logger.info(" ${count}/${irisToMirror.size} done")
+        logger.info(" $count/${irisToMirror.size} done")
     }
     logger.info("Done querying the entries")
     rdfRepository.repository.connection.use { it.add(fullEntries) }

@@ -1,14 +1,15 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Copyright (c) 2020 Jonathan Bisson
+ *
+ */
+
 package net.nprod.wikidataLotusExporter.sparql
 
 object LOTUSQueries {
-    /**
-     * Import all the wikidata taxa into a TDB2 database
-     * it will ADD to the existing database, so you probably
-     * want to delete the database first and recreate it
-     * just in case some entries were changed or deleted.
-     */
-
-    val prefixes = """
+    val prefixes =
+        """
         PREFIX wd: <http://www.wikidata.org/entity/>
         PREFIX wdt: <http://www.wikidata.org/prop/direct/>
         PREFIX wikibase: <http://wikiba.se/ontology#>
@@ -21,44 +22,52 @@ object LOTUSQueries {
         PREFIX bd: <http://www.bigdata.com/rdf#> 
         """.trimIndent()
 
-    val queryCompoundTaxonRef = """$prefixes
-    CONSTRUCT {
-        ?compound_id    wdt:P31 ?type;
-                        wdt:P703 ?taxon_id;
-                        p:P703 ?p703.
-        ?p703           prov:wasDerivedFrom ?derived.
-        ?derived pr:P248 ?reference_id.
-    }
-    WHERE {
-        VALUES ?type { wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers 
-        ?compound_id    wdt:P31 ?type; 
-                        wdt:P703 ?taxon_id;
-                        p:P703 ?p703.
-        ?p703           prov:wasDerivedFrom ?derived.
-        ?derived        pr:P248 ?reference_id.
-    }""".trimIndent()
+    val queryCompoundTaxonRef =
+        """$prefixes
+        CONSTRUCT {
+            ?compound_id    wdt:P31 ?type;
+                            wdt:P703 ?taxon_id;
+                            p:P703 ?p703.
+            ?p703           prov:wasDerivedFrom ?derived.
+            ?derived pr:P248 ?reference_id.
+        }
+        WHERE {
+            VALUES ?type { wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers 
+            ?compound_id    wdt:P31 ?type; 
+                            wdt:P703 ?taxon_id;
+                            p:P703 ?p703.
+            ?p703           prov:wasDerivedFrom ?derived.
+            ?derived        pr:P248 ?reference_id.
+        }
+        """.trimIndent()
 
-    val queryIdsLocal = """$prefixes
-    SELECT ?compound_id ?taxon_id ?reference_id
-    WHERE {
-        VALUES ?type { wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers 
-        ?compound_id wdt:P31 ?type; 
-        wdt:P703 ?taxon_id;
-        p:P703/prov:wasDerivedFrom/pr:P248 ?reference_id.
-    }""".trimIndent()
+    val queryIdsLocal =
+        """$prefixes
+        SELECT ?compound_id ?taxon_id ?reference_id
+        WHERE {
+            VALUES ?type { wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers 
+            ?compound_id wdt:P31 ?type; 
+            wdt:P703 ?taxon_id;
+            p:P703/prov:wasDerivedFrom/pr:P248 ?reference_id.
+        }
+        """.trimIndent()
 
-    val queryTaxonParents = """$prefixes
-    SELECT ?parenttaxon_id
-    WHERE {
-        VALUES ?id { %%IDS%% } 
-        ?id wdt:P171* ?parenttaxon_id.
-    }""".trimIndent()
+    val queryTaxonParents =
+        """$prefixes
+        SELECT ?parenttaxon_id
+        WHERE {
+            VALUES ?id { %%IDS%% } 
+            ?id wdt:P171* ?parenttaxon_id.
+        }
+        """.trimIndent()
 
-    val mirrorQuery = """$prefixes
-    CONSTRUCT {
-        ?id ?p ?o
-    } WHERE { 
-        VALUES ?id { %%IDS%% }
-        ?id ?p ?o.
-    }""".trimIndent()
+    val mirrorQuery =
+        """$prefixes
+        CONSTRUCT {
+            ?id ?p ?o
+        } WHERE { 
+            VALUES ?id { %%IDS%% }
+            ?id ?p ?o.
+        }
+        """.trimIndent()
 }

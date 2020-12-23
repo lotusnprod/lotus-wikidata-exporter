@@ -1,6 +1,7 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
-/**
- * Copyright (c) 2020 Jonathan Bisson.  All rights reserved.
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Copyright (c) 2020 Jonathan Bisson
  */
 
 package net.nprod.wikidataLotusExporter
@@ -10,7 +11,6 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import kotlinx.cli.default
-import kotlinx.cli.required
 import net.nprod.wikidataLotusExporter.modes.mirror.mirror
 import net.nprod.wikidataLotusExporter.modes.query.query
 import org.eclipse.rdf4j.model.IRI
@@ -26,7 +26,10 @@ fun main(args: Array<String>) {
 
     val parser = ArgParser("lotus_exporter")
     val store by parser.option(
-        ArgType.String, "store", "s", "Where the data is going to be stored"
+        ArgType.String,
+        "store",
+        "s",
+        "Where the data is going to be stored"
     ).default("data/local_rdf")
 
     var commandRun = false
@@ -43,15 +46,19 @@ fun main(args: Array<String>) {
 
     class Query : Subcommand("query", "Run a SPARQL SELECT query on the local instance and get the result") {
         val queryFilename by argument(
-            ArgType.String, "queryFile", "File with the SPARQL query"
+            ArgType.String,
+            "queryFile",
+            "File with the SPARQL query"
         )
         val outputFilename by option(
-            ArgType.String, "output", "o", "File with the SPARQL query"
+            ArgType.String,
+            "output",
+            "o",
+            "File with the SPARQL query"
         )
 
         override fun execute() {
             val storeFile = File(store)
-
 
             val queryFile = File(queryFilename)
             val outputFile = outputFilename?.let { File(it) }
