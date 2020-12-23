@@ -11,7 +11,7 @@ It is made in Kotlin. All you need really is a JVM, and it should gather everyth
 ./gradlew build
 #+END_SOURCE
 
-** Usage
+** Usage without installing
 
 *** Gather WikiData entries related to LOTUS locally
 
@@ -23,6 +23,25 @@ This can take a variable amount of time depending on how loaded the WikiData ser
 
 *** Running a query on your new local base
 
+This will output a TSV file to the standard output (so your console likely)
+
 #+BEGIN_SOURCE
 ./gradlew -q run --args "query $PWD/queries/getAllCompoundsInChIKeys.sparql"
+#+END_SOURCE
+
+** Installing and deploying on another machine
+
+#+BEGIN_SOURCE
+./gradlew assembleDist
+#+END_SOURCE
+
+This will produce several files in *build/distributions*. Uncompress the one you want somewhere and
+ you can just run it on any machine that has a JDK like that:
+
+#+BEGIN_SOURCE
+./bin/wikidataLotusExporter mirror
+#+END_SOURCE
+
+#+BEGIN_SOURCE
+./bin/wikidataLotusExporter query queries/getAllCompoundsInChIKeys.sparql
 #+END_SOURCE
