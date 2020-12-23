@@ -45,3 +45,13 @@ This will produce several files in *build/distributions*. Uncompress the one you
 #+BEGIN_SRC
 ./bin/wikidataLotusExporter query queries/getAllCompoundsInChIKeys.sparql
 #+END_SRC
+
+** Format of SPARQL queries
+
+For convenience, there is a little helper for SPARQL queries. If you add at the beginning of your query
+
+#+BEGIN_SRC
+#!WDDEFAULTIMPORTS
+#+END_SRC
+
+It will add the default wikidata prefixes.
