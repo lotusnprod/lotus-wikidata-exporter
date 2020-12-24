@@ -50,8 +50,7 @@ object LOTUSQueries {
         """$prefixes
         SELECT ?compound_id ?taxon_id ?reference_id
         WHERE {
-            ?compound_id     wdt:P235 ?inchikey;
-                             p:P703 ?pp703;
+            ?compound_id     p:P703 ?pp703;
                              wdt:P31 ?type.
 
             ?pp703           ps:P703 ?taxon_id;

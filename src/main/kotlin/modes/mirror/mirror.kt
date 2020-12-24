@@ -54,6 +54,7 @@ fun mirror(repositoryLocation: File) {
             }
         )
     }
+    logger.info("We have ${irisToMirror.size} and ${taxasToParentMirror.size} taxa")
 
     logger.info("Getting the taxa relations remotely")
     val oldCounter = irisToMirror.size
@@ -71,7 +72,9 @@ fun mirror(repositoryLocation: File) {
 
     logger.info("Getting the taxonomic ranks info")
 
-    Repositories.graphQuery(sparqlRepository, LOTUSQueries.queryTaxoRanksInfo) { result -> fullEntries.addAll(result) }
+    Repositories.graphQuery(sparqlRepository, LOTUSQueries.queryTaxoRanksInfo) { result ->
+        fullEntries.addAll(result)
+    }
 
     logger.info("Gathering full data about all the compounds, taxa and references")
 
