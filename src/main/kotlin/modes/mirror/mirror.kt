@@ -39,7 +39,6 @@ fun mirror(repositoryLocation: File) {
     rdfRepository.repository.connection.use { it.add(fullEntries) }
     fullEntries.clear()
 
-
     logger.info("Querying the local data for all the ids we need")
     val irisToMirror = mutableSetOf<IRI>()
     val taxasToParentMirror = mutableSetOf<IRI>()
