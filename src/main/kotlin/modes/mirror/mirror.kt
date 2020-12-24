@@ -117,7 +117,7 @@ fun mirror(repositoryLocation: File) {
     }
 
     logger.info("Querying the local data for all the ids we need")
-    val (irisToMirror, taxasToMirror) = sparqlRepository.getIRIsAndTaxaIRIs()
+    val (irisToMirror, taxasToMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs()
 
     logger.info("We have ${irisToMirror.size} and ${taxasToMirror.size} taxa")
 
