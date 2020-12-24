@@ -20,7 +20,7 @@ import java.io.File
 /**
  * Size of the blocks of values for each SPARQL query
  */
-const val CHUNCK_SIZE = 1000
+const val CHUNCK_SIZE = 4000
 
 fun mirror(repositoryLocation: File) {
     val logger = LoggerFactory.getLogger("mirror")
@@ -29,19 +29,22 @@ fun mirror(repositoryLocation: File) {
 
     logger.info("Let's go")
 
+    logger.info("Querying Wikidata for all the triplets taxon-compound-reference")
     val fullEntries = mutableListOf<Statement>()
     Repositories.graphQuery(sparqlRepository, LOTUSQueries.queryCompoundTaxonRef) { result ->
         fullEntries.addAll(result)
     }
-    logger.info("Done querying the compound-taxo couples")
-    logger.info("Adding the compound-taxa")
+
+    logger.info("Adding the data to our local repository")
     rdfRepository.repository.connection.use { it.add(fullEntries) }
     fullEntries.clear()
 
+
+    logger.info("Querying the local data for all the ids we need")
     val irisToMirror = mutableSetOf<IRI>()
     val taxasToParentMirror = mutableSetOf<IRI>()
     // We add all the ids to a set so we can mirror them
-    Repositories.tupleQuery(sparqlRepository, LOTUSQueries.queryIdsLocal) { result: TupleQueryResult ->
+    Repositories.tupleQuery(rdfRepository.repository, LOTUSQueries.queryIdsLocal) { result: TupleQueryResult ->
         irisToMirror.addAll(
             result.flatMap { bindingSet ->
                 val compoundID: IRI = bindingSet.getBinding("compound_id").value as IRI
@@ -53,7 +56,7 @@ fun mirror(repositoryLocation: File) {
         )
     }
 
-    logger.info("Getting the taxa relations")
+    logger.info("Getting the taxa relations remotely")
     val oldCounter = irisToMirror.size
     taxasToParentMirror.chunked(CHUNCK_SIZE).map {
         val listOfTaxa = it.map { "wd:${it.getIDfromIRI()}" }.joinToString(" ")
@@ -68,7 +71,10 @@ fun mirror(repositoryLocation: File) {
     var count = 0
 
     logger.info("Getting the taxonomic ranks info")
+
     Repositories.graphQuery(sparqlRepository, LOTUSQueries.queryTaxoRanksInfo) { result -> fullEntries.addAll(result) }
+
+    logger.info("Gathering full data about all the compounds, taxa and references")
 
     irisToMirror.chunked(CHUNCK_SIZE).map {
         val listOfCompounds = it.map { "wd:${it.getIDfromIRI()}" }.joinToString(" ")
@@ -77,9 +83,8 @@ fun mirror(repositoryLocation: File) {
         count += it.size
         logger.info(" $count/${irisToMirror.size} done")
     }
-    logger.info("Done querying the entries")
+    logger.info("Adding the queried info on all the compounds, taxa and references to the local repository")
     rdfRepository.repository.connection.use { it.add(fullEntries) }
-    logger.info("Adding the compounds, taxon and reference info")
 
     logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} in the local RDF repository now")
 }

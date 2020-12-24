@@ -9,4 +9,4 @@ SELECT ?article ?doi
     } MINUS {
         ?article wdt:P478 ?something.
     }
-} LIMIT 10
+}

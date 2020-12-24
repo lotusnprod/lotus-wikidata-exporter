@@ -27,17 +27,22 @@ object LOTUSQueries {
         CONSTRUCT {
             ?compound_id    wdt:P31 ?type;
                             wdt:P703 ?taxon_id;
-                            p:P703 ?p703.
-            ?p703           prov:wasDerivedFrom ?derived.
-            ?derived pr:P248 ?reference_id.
+                            p:P703 ?pp703.
+            ?pp703          ps:P703 ?taxon_id;
+                            prov:wasDerivedFrom ?derived.
+           
+            ?derived        pr:P248 ?reference_id.
         }
         WHERE {
-            VALUES ?type { wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers 
-            ?compound_id    wdt:P31 ?type; 
-                            wdt:P703 ?taxon_id;
-                            p:P703 ?p703.
-            ?p703           prov:wasDerivedFrom ?derived.
-            ?derived        pr:P248 ?reference_id.
+            ?compound_id     wdt:P235 ?inchikey;
+                             p:P703 ?pp703;
+                             wdt:P31 ?type.
+
+            ?pp703           ps:P703 ?taxon_id;
+                             prov:wasDerivedFrom ?derived.
+            ?derived            pr:P248 ?reference_id.
+
+            VALUES ?type { wd:Q11173 wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers
         }
         """.trimIndent()
 
@@ -45,10 +50,14 @@ object LOTUSQueries {
         """$prefixes
         SELECT ?compound_id ?taxon_id ?reference_id
         WHERE {
-            VALUES ?type { wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers 
-            ?compound_id wdt:P31 ?type; 
-            wdt:P703 ?taxon_id;
-            p:P703/prov:wasDerivedFrom/pr:P248 ?reference_id.
+            ?compound_id     wdt:P235 ?inchikey;
+                             p:P703 ?pp703;
+                             wdt:P31 ?type.
+
+            ?pp703           ps:P703 ?taxon_id;
+                             prov:wasDerivedFrom/pr:P248 ?reference_id.
+
+            VALUES ?type { wd:Q11173 wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers
         }
         """.trimIndent()
 
