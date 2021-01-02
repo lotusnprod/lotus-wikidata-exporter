@@ -1,0 +1,16 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Copyright (c) 2021
+ */
+
+package net.nprod.wikidataLotusExporter.rdf.vocabulary
+
+object WikidataTaxonomy {
+    object Properties {
+        val foundInTaxon = Wikidata.wdt("P703")
+        val taxonName = Wikidata.wdt("P225")
+        val taxonRank = Wikidata.wdt("P105")
+        val parentTaxon = Wikidata.wdt("P171")
+    }
+}
