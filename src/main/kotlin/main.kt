@@ -11,6 +11,7 @@ import kotlinx.cli.ArgType
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import kotlinx.cli.default
+import net.nprod.wikidataLotusExporter.modes.export.export
 import net.nprod.wikidataLotusExporter.modes.mirror.mirror
 import net.nprod.wikidataLotusExporter.modes.query.query
 import org.eclipse.rdf4j.model.IRI
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileNotFoundException
 
-fun IRI.getIDfromIRI(): String = this.stringValue().split("/").last()
+fun IRI.getIDFromIRI(): String = this.stringValue().split("/").last()
 
 @ExperimentalCli
 fun main(args: Array<String>) {
@@ -40,6 +41,30 @@ fun main(args: Array<String>) {
             storeFile.mkdirs()
             logger.info("Starting in mirroring mode into the repository: $store")
             mirror(storeFile)
+            commandRun = true
+        }
+    }
+
+    class Export : Subcommand("export", "Export LOTUS to… something") {
+        val outputFilename by option(
+            ArgType.String,
+            "output",
+            "o",
+            "File with the SPARQL query"
+        )
+        val direct by option(
+            ArgType.Boolean,
+            "direct",
+            "d",
+            "Connect directly to WikiData, do not use the local instance"
+        ).default(false)
+
+        override fun execute() {
+            val storeFile = File(store)
+            storeFile.mkdirs()
+            val outputFile = outputFilename?.let { File(it) }
+            logger.info("Exporting from the repository: $store")
+            export(storeFile, outputFile, direct)
             commandRun = true
         }
     }
@@ -84,7 +109,7 @@ fun main(args: Array<String>) {
         }
     }
 
-    parser.subcommands(Mirror(), Query())
+    parser.subcommands(Mirror(), Query(), Export())
     parser.parse(args)
 
     if (!commandRun) logger.error("Please use at least one of the commands, check the help: -h")

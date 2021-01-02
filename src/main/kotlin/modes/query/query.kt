@@ -21,6 +21,7 @@ import java.io.OutputStreamWriter
 /**
  * Write the results from the SPARQL query to a TSV file
  */
+
 fun RepositoryConnection.queryToTSV(tsvWriter: TsvWriter, query: String) {
     this.prepareTupleQuery(query).evaluate().let { results ->
         val bindingNames = results.bindingNames

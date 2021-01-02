@@ -6,7 +6,7 @@
 
 package net.nprod.wikidataLotusExporter.modes.mirror
 
-import net.nprod.wikidataLotusExporter.getIDfromIRI
+import net.nprod.wikidataLotusExporter.getIDFromIRI
 import net.nprod.wikidataLotusExporter.rdf.RDFRepository
 import net.nprod.wikidataLotusExporter.sparql.LOTUSQueries
 import org.eclipse.rdf4j.IsolationLevels
@@ -62,7 +62,7 @@ fun Repository.getIRIsAndTaxaIRIs(): Pair<IRISET, TAXAIRISET> {
 fun Repository.getTaxaParentIRIs(taxasToParentMirror: TAXAIRISET): Set<IRI> {
     val newIRIsToMirror = mutableSetOf<IRI>()
     taxasToParentMirror.chunked(CHUNK_SIZE).forEach {
-        val listOfTaxa = it.map { "wd:${it.getIDfromIRI()}" }.joinToString(" ")
+        val listOfTaxa = it.map { "wd:${it.getIDFromIRI()}" }.joinToString(" ")
         val modifiedQuery = LOTUSQueries.queryTaxonParents.replace("%%IDS%%", listOfTaxa)
         Repositories.tupleQuery(this, modifiedQuery) { result: TupleQueryResult ->
             newIRIsToMirror.addAll(
@@ -91,7 +91,7 @@ fun Repository.getEverythingAbout(iris: Collection<IRI>, f: (Int) -> Unit = {}):
     val list = mutableListOf<Statement>()
     var count = 0
     iris.chunked(CHUNK_SIZE).map {
-        val listOfCompounds = it.map { "wd:${it.getIDfromIRI()}" }.joinToString(" ")
+        val listOfCompounds = it.map { "wd:${it.getIDFromIRI()}" }.joinToString(" ")
         val compoundQuery = LOTUSQueries.mirrorQuery.replace("%%IDS%%", listOfCompounds)
         Repositories.graphQuery(this, compoundQuery) { result -> list.addAll(result) }
         count += it.size
