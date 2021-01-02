@@ -104,13 +104,15 @@ fun export(repositoryLocation: File, outFile: File?, direct: Boolean) {
             try {
                 Taxon(
                     wikiDataId = taxon.toString(),
-                    name = conn.getSingleObjectOrFail(taxon, WikidataTaxonomy.Properties.taxonName)?.toString()
+                    names = conn.getStatements(taxon, WikidataTaxonomy.Properties.taxonName, null).mapNotNull {
+                        it.`object`?.toString()
+                    }
                 )
             } catch (e: CardinalityException) {
                 logger.error(e.message)
                 null
             }
-        }.also { it.take(10).forEach { println(it)}}
+        }.also { it.take(10).forEach { println(it) } }
 
         logger.info("We have ${finalCompounds.size} compounds usable.")
         logger.info("We have ${finalTaxa.size} taxa usable.")
