@@ -34,12 +34,16 @@ fun RepositoryConnection.queryToTSV(tsvWriter: TsvWriter, query: String) {
 
 fun query(repositoryLocation: File, queryFile: File, outFile: File?, direct: Boolean) {
     val logger = LoggerFactory.getLogger("query")
+
+    logger.info("Starting in querying mode into the repository: $repositoryLocation with the query file $queryFile")
+
     val rdfRepository = RDFRepository(repositoryLocation)
     val connection = if (direct) {
         SPARQLRepository("https://query.wikidata.org/sparql").connection
     } else {
         rdfRepository.repository.connection
     }
+
     val fileWriter = outFile?.bufferedWriter() ?: BufferedWriter(OutputStreamWriter(System.out))
     fileWriter.use {
         val tsvWriter = TsvWriter(fileWriter, TsvWriterSettings())

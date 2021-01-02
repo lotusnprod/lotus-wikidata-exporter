@@ -13,4 +13,6 @@ data class Compound(
     val inchi: String?,
     val inchiKey: String?,
     val foundInTaxon: List<String>
-)
+) {
+    companion object // We do that to allow other classes to create companion objects.
+}

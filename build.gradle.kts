@@ -30,10 +30,10 @@ dependencies {
     val junitVersion: String by project
     val rdf4jVersion: String by project
     val log4jVersion: String by project
-    val kotlinxCliVersion: String by project
+    val cliktVersion: String by project
     val univocityParserVersion: String by project
 
-    implementation("org.jetbrains.kotlinx:kotlinx-cli:$kotlinxCliVersion")
+    implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
 
     implementation("com.univocity:univocity-parsers:$univocityParserVersion")
 

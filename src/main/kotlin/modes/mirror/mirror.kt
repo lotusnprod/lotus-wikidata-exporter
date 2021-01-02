@@ -6,7 +6,6 @@
 
 package net.nprod.wikidataLotusExporter.modes.mirror
 
-import net.nprod.wikidataLotusExporter.getIDFromIRI
 import net.nprod.wikidataLotusExporter.rdf.RDFRepository
 import net.nprod.wikidataLotusExporter.sparql.LOTUSQueries
 import org.eclipse.rdf4j.IsolationLevels
@@ -18,6 +17,8 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
 import org.eclipse.rdf4j.repository.util.Repositories
 import org.slf4j.LoggerFactory
 import java.io.File
+
+fun IRI.getIDFromIRI(): String = this.stringValue().split("/").last()
 
 /**
  * Size of the blocks of values for each SPARQL query
@@ -105,7 +106,7 @@ fun mirror(repositoryLocation: File) {
     val sparqlRepository = SPARQLRepository("https://query.wikidata.org/sparql")
     val rdfRepository = RDFRepository(repositoryLocation)
 
-    logger.info("Let's go")
+    logger.info("Starting in mirroring mode into the repository: $repositoryLocation")
 
     logger.info("Querying Wikidata for all the triplets taxon-compound-reference")
     val fullEntries = sparqlRepository.addEntriesFromConstruct()

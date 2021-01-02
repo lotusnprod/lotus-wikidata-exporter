@@ -22,6 +22,7 @@ class RDFRepository(location: File) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     init {
+        location.mkdirs()
         val file = location.also {
             if (!it.canWrite() || !it.canRead()) throw AccessDeniedException(it)
         }
