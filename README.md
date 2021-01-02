@@ -1,66 +1,66 @@
-* wikidata Lotus Exporter
+# wikidata Lotus Exporter
 
 This project is used to take the LOTUS (and beyond) data from Wikidata and export it in a format
 that can be used by our website.
 
 It is made in Kotlin. All you need really is a JVM, and it should gather everything by itself.
 
-** Build
+## Build
 
-#+BEGIN_SRC
+````
 ./gradlew build
-#+END_SRC
+````
 
-** Usage without installing
+## Usage without installing
 
-*** Gather WikiData entries related to LOTUS locally
+### Gather WikiData entries related to LOTUS locally
 
 This can take a variable amount of time depending on how loaded the WikiData servers are. On good days it is < 5 min
 
-#+BEGIN_SRC
+````
 ./gradlew -q run --args "mirror"
-#+END_SRC
+````
 
-*** Running a query on your new local base
+### Running a query on your new local base
 
 This will output a TSV file to the standard output (so your console likely)
 
-#+BEGIN_SRC
+````
 ./gradlew -q run --args "query $PWD/queries/getAllCompoundsInChIKeys.sparql"
-#+END_SRC
+````
 
-*** Running a query directly on WikiData
+### Running a query directly on WikiData
 
 There is also a way to do the query directly on WikiData
 
-#+BEGIN_SRC
+````
 ./gradlew -q run --args "query -d $PWD/queries/getAllCompoundsInChIKeys.sparql"
-#+END_SRC
+````
 
 
-** Installing and deploying on another machine
+## Installing and deploying on another machine
 
-#+BEGIN_SRC
+````
 ./gradlew assembleDist
-#+END_SRC
+````
 
 This will produce several files in *build/distributions*. Uncompress the one you want somewhere and
  you can just run it on any machine that has a JDK like that:
 
-#+BEGIN_SRC
+````
 ./bin/wikidataLotusExporter mirror
-#+END_SRC
+````
 
-#+BEGIN_SRC
+````
 ./bin/wikidataLotusExporter query queries/getAllCompoundsInChIKeys.sparql
-#+END_SRC
+````
 
-** Format of SPARQL queries
+## Format of SPARQL queries
 
 For convenience, there is a little helper for SPARQL queries. If you add at the beginning of your query
 
-#+BEGIN_SRC
+````
 #!WDDEFAULTIMPORTS
-#+END_SRC
+````
 
 It will add the default wikidata prefixes.
