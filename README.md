@@ -21,6 +21,16 @@ This can take a variable amount of time depending on how loaded the WikiData ser
 ./gradlew -q run --args "mirror"
 ````
 
+### Export entries to TSV
+
+This will export in tsv files in data/output. We have 4 files: references.tsv, compounds.tsv, taxa.tsv
+and a file that contains the triples linking these: /compound_reference_taxon.tsv/
+
+````
+./gradlew -q run --args "export -o data/output"
+````
+
+
 ### Running a query on your new local base
 
 This will output a TSV file to the standard output (so your console likely)

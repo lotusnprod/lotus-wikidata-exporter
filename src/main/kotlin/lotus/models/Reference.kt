@@ -6,7 +6,7 @@
 
 package net.nprod.wikidataLotusExporter.lotus.models
 
-data class Taxon(
+data class Reference(
     val wikidataId: String,
-    val names: List<String>
+    val doi: String?
 )

@@ -11,8 +11,7 @@ data class Compound(
     val canonicalSmiles: String?,
     val isomericSmiles: String?,
     val inchi: String?,
-    val inchiKey: String?,
-    val foundInTaxon: List<String>
+    val inchiKey: String?
 ) {
     companion object // We do that to allow other classes to create companion objects.
 }

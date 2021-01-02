@@ -10,13 +10,14 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.required
 import net.nprod.wikidataLotusExporter.DEFAULT_REPOSITORY
 import java.io.File
 
 class Export : CliktCommand(help = "Export LOTUS to… something") {
     private val store by option("-s", "--store", help = "Where the data is going to be stored")
         .default(DEFAULT_REPOSITORY)
-    private val outputFilename by option("-o", "--output", help = "Output file")
+    private val outputDirectory by option("-o", "--output", help = "Output directory").required()
     private val direct by option(
         "-d",
         "--direct",
@@ -25,7 +26,9 @@ class Export : CliktCommand(help = "Export LOTUS to… something") {
 
     override fun run() {
         val storeFile = File(store)
-        val outputFile = outputFilename?.let { File(it) }
-        export(storeFile, outputFile, direct)
+        val outputDirectory = outputDirectory.let { File(it).also {
+            it.mkdirs()
+        } }
+        export(storeFile, outputDirectory, direct)
     }
 }

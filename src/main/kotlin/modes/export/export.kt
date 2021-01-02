@@ -6,12 +6,18 @@
 
 package net.nprod.wikidataLotusExporter.modes.export
 
+import com.univocity.parsers.tsv.TsvWriter
+import com.univocity.parsers.tsv.TsvWriterSettings
 import net.nprod.wikidataLotusExporter.lotus.models.Compound
+import net.nprod.wikidataLotusExporter.lotus.models.CompoundReferenceTaxon
+import net.nprod.wikidataLotusExporter.lotus.models.Reference
 import net.nprod.wikidataLotusExporter.lotus.models.Taxon
 import net.nprod.wikidataLotusExporter.rdf.RDFRepository
 import net.nprod.wikidataLotusExporter.rdf.vocabulary.Wikidata
+import net.nprod.wikidataLotusExporter.rdf.vocabulary.WikidataBibliography
 import net.nprod.wikidataLotusExporter.rdf.vocabulary.WikidataChemistry
 import net.nprod.wikidataLotusExporter.rdf.vocabulary.WikidataTaxonomy
+import net.nprod.wikidataLotusExporter.sparql.LOTUSQueries
 import org.eclipse.rdf4j.model.IRI
 import org.eclipse.rdf4j.model.Resource
 import org.eclipse.rdf4j.model.Value
@@ -19,6 +25,16 @@ import org.eclipse.rdf4j.repository.RepositoryConnection
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
 import org.slf4j.LoggerFactory
 import java.io.File
+
+val queryForRefsAndTaxon = """
+  ${LOTUSQueries.prefixes}
+  SELECT ?taxon_id ?reference_id
+  WHERE {
+    <<<COMPOUND>>>   p:P703 ?pp703.
+    ?pp703           ps:P703 ?taxon_id;
+                     prov:wasDerivedFrom/pr:P248 ?reference_id.
+  }
+  """.trimIndent()
 
 fun RepositoryConnection.getSingleObjectOrFail(subject: Resource, predicate: IRI): Value? =
     this.getStatements(subject, predicate, null).let {
@@ -49,7 +65,7 @@ fun RepositoryConnection.getBestInchiKey(subject: Resource): String? =
         resultsEventuallyFiltered.firstOrNull()?.toString()
     }
 
-fun export(repositoryLocation: File, outFile: File?, direct: Boolean) {
+fun export(repositoryLocation: File, outputDirectory: File, direct: Boolean) {
     val logger = LoggerFactory.getLogger("export")
     val rdfRepository = RDFRepository(repositoryLocation)
 
@@ -61,66 +77,130 @@ fun export(repositoryLocation: File, outFile: File?, direct: Boolean) {
 
     logger.info("Exporting from the repository: $repositoryLocation")
 
+    val compoundReferenceTaxonList = mutableListOf<CompoundReferenceTaxon>()
+    val compounds = mutableListOf<Compound>()
+    val references = mutableListOf<Reference>()
+    val taxa = mutableListOf<Taxon>()
+
+
     connection.use { conn: RepositoryConnection ->
         val allCompoundsSubjects =
             (
                 conn.getStatements(null, Wikidata.Properties.instanceOf, WikidataChemistry.chemicalCompound) +
                     conn.getStatements(null, Wikidata.Properties.instanceOf, WikidataChemistry.chemicalEntity) +
                     conn.getStatements(null, Wikidata.Properties.instanceOf, WikidataChemistry.groupOfStereoIsomers)
-                )
+                ).toSet()
                 .map { it.subject }
 
         val allTaxaSubjects = mutableSetOf<Resource>()
 
-        val finalCompounds = allCompoundsSubjects.mapNotNull { compound ->
-            val taxa =
-                conn.getStatements(compound, WikidataTaxonomy.Properties.foundInTaxon, null)
-                    .mapNotNull { if (it.`object` is Resource) it.`object` as Resource else null }
-            allTaxaSubjects.addAll(taxa)
+        val allReferencesSubjects = mutableSetOf<Resource>()
 
-            try {
-                Compound.createFromRepository(compound, taxa, conn)
-            } catch (e: CardinalityException) {
-                logger.error(e.message)
-                null
+        allCompoundsSubjects.forEach { compound ->
+            conn.prepareTupleQuery(queryForRefsAndTaxon.replace("<<COMPOUND>>", compound.toString())).evaluate().map {
+                val taxonId = it.getValue("taxon_id")
+                if (taxonId is Resource) allTaxaSubjects.add(taxonId)
+
+                val referenceId = it.getValue("reference_id")
+                if (referenceId is Resource) allReferencesSubjects.add(referenceId)
+
+                compoundReferenceTaxonList.add(
+                    CompoundReferenceTaxon(
+                        compound.toString(),
+                        taxonId.toString(),
+                        referenceId.toString()
+                    )
+                )
             }
-        }
-
-        val finalTaxa = allTaxaSubjects.mapNotNull { taxon ->
             try {
-                Taxon(
-                    wikiDataId = taxon.toString(),
-                    names = conn.getStatements(taxon, WikidataTaxonomy.Properties.taxonName, null).mapNotNull {
-                        it.`object`?.toString()
-                    }
+                compounds.add(
+                    Compound(
+                        wikidataId = compound.toString(),
+                        inchiKey = conn.getBestInchiKey(compound),
+                        inchi = conn.getSingleObjectOrFail(compound, WikidataChemistry.Properties.inchi)
+                            .toString(),
+                        canonicalSmiles = conn.getSingleObjectOrFail(
+                            compound,
+                            WikidataChemistry.Properties.canonicalSmiles
+                        ).toString(),
+                        isomericSmiles = conn.getSingleObjectOrFail(
+                            compound,
+                            WikidataChemistry.Properties.isomericSmiles
+                        ).toString()
+                    )
                 )
             } catch (e: CardinalityException) {
                 logger.error(e.message)
-                null
             }
         }
 
-        logger.info("We have ${finalCompounds.size} compounds and ${finalTaxa.size} taxa usable.")
+        allTaxaSubjects.forEach { taxon ->
+            try {
+                taxa.add(Taxon(
+                    wikidataId = taxon.toString(),
+                    names = conn.getStatements(taxon, WikidataTaxonomy.Properties.taxonName, null).mapNotNull {
+                        it.`object`?.toString()
+                    }
+                ))
+            } catch (e: CardinalityException) {
+                logger.error(e.message)
+            }
+        }
+
+        allReferencesSubjects.forEach { reference ->
+            try {
+                references.add(
+                    Reference(
+                        wikidataId = reference.toString(),
+                        doi = conn.getSingleObjectOrFail(reference, WikidataBibliography.Properties.doi).toString()
+                    )
+                )
+            } catch (e: CardinalityException) {
+                logger.error(e.message)
+            }
+        }
+
+        logger.info("Exporting")
+        compoundListToTSV(compounds, File(outputDirectory, "compounds.tsv"))
+        referenceListToTSV(references, File(outputDirectory, "references.tsv"))
+        taxonListToTSV(taxa, File(outputDirectory,"taxa.tsv"))
+        compoundReferenceTaxonListToTSV(compoundReferenceTaxonList, File(outputDirectory, "compound_reference_taxon.tsv"))
+        logger.info("Done")
     }
 }
 
-fun Compound.Companion.createFromRepository(
-    compound: Resource,
-    taxa: List<Resource>,
-    conn: RepositoryConnection
-): Compound =
-    Compound(
-        wikidataId = compound.toString(),
-        inchiKey = conn.getBestInchiKey(compound),
-        inchi = conn.getSingleObjectOrFail(compound, WikidataChemistry.Properties.inchi)
-            .toString(),
-        canonicalSmiles = conn.getSingleObjectOrFail(
-            compound,
-            WikidataChemistry.Properties.canonicalSmiles
-        ).toString(),
-        isomericSmiles = conn.getSingleObjectOrFail(
-            compound,
-            WikidataChemistry.Properties.isomericSmiles
-        ).toString(),
-        foundInTaxon = taxa.map { it.toString() }
-    )
+fun compoundListToTSV(compoundList: List<Compound>, file: File) {
+    val writer = TsvWriter(file.bufferedWriter(), TsvWriterSettings())
+    writer.writeHeaders("wikidataId", "canonicalSmiles", "isomericSmiles", "inchi", "inchiKey")
+    compoundList.forEach {
+        writer.writeRow(it.wikidataId, it.canonicalSmiles, it.isomericSmiles, it.inchi, it.inchiKey)
+    }
+    writer.close()
+}
+
+fun taxonListToTSV(taxonList: List<Taxon>, file: File) {
+    val writer = TsvWriter(file.bufferedWriter(), TsvWriterSettings())
+    writer.writeHeaders("wikidataId", "names_pipe_separated")
+    taxonList.forEach {
+        writer.writeRow(it.wikidataId, it.names.joinToString("|"))
+    }
+    writer.close()
+}
+
+fun referenceListToTSV(referenceList: List<Reference>, file: File) {
+    val writer = TsvWriter(file.bufferedWriter(), TsvWriterSettings())
+    writer.writeHeaders("wikidataId", "doi")
+    referenceList.forEach {
+        writer.writeRow(it.wikidataId, it.doi)
+    }
+    writer.close()
+}
+
+fun compoundReferenceTaxonListToTSV(compoundReferenceTaxonList: List<CompoundReferenceTaxon>, file: File) {
+    val writer = TsvWriter(file.bufferedWriter(), TsvWriterSettings())
+    writer.writeHeaders("compound", "reference", "taxon")
+    compoundReferenceTaxonList.forEach {
+        writer.writeRow(it.compound, it.reference, it.taxon)
+    }
+    writer.close()
+}
