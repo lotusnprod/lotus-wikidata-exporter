@@ -13,7 +13,6 @@ import net.nprod.wikidataLotusExporter.modes.export.formats.compoundReferenceTax
 import net.nprod.wikidataLotusExporter.modes.export.formats.compoundsToTSV
 import net.nprod.wikidataLotusExporter.modes.export.formats.referenceListToTSV
 import net.nprod.wikidataLotusExporter.modes.export.formats.taxonListToFlatTSV
-import net.nprod.wikidataLotusExporter.modes.export.formats.taxonListToTSV
 import net.nprod.wikidataLotusExporter.rdf.RDFRepository
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
 import org.slf4j.LoggerFactory

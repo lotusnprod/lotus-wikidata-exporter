@@ -16,7 +16,8 @@ import org.eclipse.rdf4j.repository.RepositoryConnection
 fun doWithEachTaxon(repository: Repository, f: (Taxon) -> Unit) {
     repository.connection.use { conn: RepositoryConnection ->
         conn.begin(IsolationLevels.NONE) // We are not writing anything
-        val query = """
+        val query =
+            """
             ${LOTUSQueries.prefixes}
             SELECT DISTINCT ?taxon_id ?parent_id ?taxon_name ?taxon_rank {
               ?taxon_id <${WikidataTaxonomy.Properties.taxonName}> ?taxon_name;
