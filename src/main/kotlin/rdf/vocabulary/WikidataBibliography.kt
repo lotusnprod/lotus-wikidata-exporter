@@ -10,4 +10,9 @@ object WikidataBibliography {
     object Properties {
         val doi = Wikidata.wdt("P356")
     }
+
+    val scholarlyArticle = Wikidata.wd("Q13442814")
+    val scholarlyPublication = Wikidata.wd("Q591041")
+    val article = Wikidata.wd("Q191067")
+    val publication = Wikidata.wd("Q732577")
 }

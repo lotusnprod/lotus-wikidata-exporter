@@ -13,4 +13,5 @@ object WikidataTaxonomy {
         val taxonRank = Wikidata.wdt("P105")
         val parentTaxon = Wikidata.wdt("P171")
     }
+    val taxon = Wikidata.wd("Q16521")
 }

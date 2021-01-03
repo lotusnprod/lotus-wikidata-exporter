@@ -8,10 +8,10 @@ package net.nprod.wikidataLotusExporter.lotus.models
 
 data class Compound(
     val wikidataId: String,
-    val canonicalSmiles: String?,
-    val isomericSmiles: String?,
-    val inchi: String?,
-    val inchiKey: String?
+    val canonicalSmiles: List<String>,
+    val isomericSmiles: List<String>,
+    val inchis: List<String>,
+    val inchiKeys: List<String>
 ) {
     companion object // We do that to allow other classes to create companion objects.
 }

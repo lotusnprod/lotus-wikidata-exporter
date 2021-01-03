@@ -11,6 +11,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import kotlinx.coroutines.runBlocking
 import net.nprod.wikidataLotusExporter.DEFAULT_REPOSITORY
 import java.io.File
 
@@ -26,9 +27,13 @@ class Export : CliktCommand(help = "Export LOTUS to… something") {
 
     override fun run() {
         val storeFile = File(store)
-        val outputDirectory = outputDirectory.let { File(it).also {
-            it.mkdirs()
-        } }
-        export(storeFile, outputDirectory, direct)
+        val outputDirectory = outputDirectory.let {
+            File(it).also {
+                it.mkdirs()
+            }
+        }
+        runBlocking {
+            export(storeFile, outputDirectory, direct).join()
+        }
     }
 }

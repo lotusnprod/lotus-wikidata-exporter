@@ -32,6 +32,9 @@ dependencies {
     val log4jVersion: String by project
     val cliktVersion: String by project
     val univocityParserVersion: String by project
+    val coroutinesVersion: String by project
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
     implementation("com.github.ajalt.clikt:clikt:$cliktVersion")
 
