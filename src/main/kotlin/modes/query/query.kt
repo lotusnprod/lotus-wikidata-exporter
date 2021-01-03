@@ -27,7 +27,7 @@ fun RepositoryConnection.queryToTSV(tsvWriter: TsvWriter, query: String) {
         val bindingNames = results.bindingNames
         tsvWriter.writeHeaders(bindingNames)
         results.map { bindingSet ->
-            tsvWriter.writeRow(bindingNames.map { bindingSet.getBinding(it).value })
+            tsvWriter.writeRow(bindingNames.map { bindingSet.getBinding(it)?.value ?: "" })
         }
     }
 }

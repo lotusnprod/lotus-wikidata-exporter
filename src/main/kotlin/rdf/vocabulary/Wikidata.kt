@@ -12,6 +12,8 @@ object Wikidata {
     private val simpleValueFactory = SimpleValueFactory.getInstance()
     fun wdt(localName: String) = simpleValueFactory.createIRI(wdtPrefix, localName)
     fun wd(localName: String) = simpleValueFactory.createIRI(wdPrefix, localName)
+    fun p(localName: String) = simpleValueFactory.createIRI(pPrefix, localName)
+    fun ps(localName: String) = simpleValueFactory.createIRI(psPrefix, localName)
 
     /**
      * PREFIX wd: <>

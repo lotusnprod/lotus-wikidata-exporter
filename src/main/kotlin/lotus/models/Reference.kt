@@ -8,5 +8,6 @@ package net.nprod.wikidataLotusExporter.lotus.models
 
 data class Reference(
     val wikidataId: String,
-    val dois: List<String>
+    val dois: List<String>,
+    val title: String?
 )

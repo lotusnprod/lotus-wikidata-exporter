@@ -9,5 +9,6 @@ package net.nprod.wikidataLotusExporter.lotus.models
 data class Taxon(
     val wikidataId: String,
     val names: List<String>,
+    val rank: String?,
     val parents: List<String>
 )

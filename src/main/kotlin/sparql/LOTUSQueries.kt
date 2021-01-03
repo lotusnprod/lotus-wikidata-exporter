@@ -65,7 +65,7 @@ object LOTUSQueries {
         SELECT ?parenttaxon_id
         WHERE {
             VALUES ?id { %%IDS%% } 
-            ?id wdt:P171+ ?parenttaxon_id.
+            ?id (p:P171/ps:P171)+ ?parenttaxon_id.
         }
         """.trimIndent()
 
@@ -80,10 +80,24 @@ object LOTUSQueries {
         }
         """.trimIndent()
 
+    val mirrorQueryForTaxo =
+        """$prefixes
+        CONSTRUCT {
+            ?id ?p ?o.
+            ?id p:P171 ?p171.
+            ?p171 ps:P171 ?parenttaxon_id.
+        } WHERE { 
+            VALUES ?id { %%IDS%% }
+            ?id ?p ?o.
+            OPTIONAL { ?id p:P171 ?p171. 
+            ?p171 ps:P171 ?parenttaxon_id. }
+        }
+        """.trimIndent()
+
     val mirrorQuery =
         """$prefixes
         CONSTRUCT {
-            ?id ?p ?o
+            ?id ?p ?o.
         } WHERE { 
             VALUES ?id { %%IDS%% }
             ?id ?p ?o.

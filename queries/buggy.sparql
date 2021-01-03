@@ -1,11 +1,10 @@
 #!WDDEFAULTIMPORTS
-SELECT ?compound_id ?taxon_id ?reference_id
-        WHERE {
-            ?compound_id     p:P703 ?pp703;
-                             wdt:P31 ?type.
+ SELECT DISTINCT ?taxon_id ?parent_id ?taxon_name ?taxon_rank  ?x ?p ?o {
+              ?taxon_id <http://www.wikidata.org/prop/direct/P225> ?taxon_name;
+                        <http://www.wikidata.org/prop/direct/P105>/rdfs:label ?taxon_rank.
 
-            ?pp703           ps:P703 ?taxon_id;
-                             prov:wasDerivedFrom/pr:P248 ?reference_id.
+              ?taxon_id <http://www.wikidata.org/prop/P171> ?x.
+              ?x ?p ?o .
 
-            VALUES ?type { wd:Q11173 wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers
-        }
+              FILTER (lang(?taxon_rank) = 'en')
+            } LIMIT 10

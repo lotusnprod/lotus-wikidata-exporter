@@ -33,17 +33,17 @@ fun compoundReferenceTaxonListToTSV(repository: Repository, file: File) {
 }
 
 fun referenceListToTSV(repository: Repository, file: File) {
-    writeTSVFileWith(file, "wikidataId", "dois_pipe_separated") {
+    writeTSVFileWith(file, "wikidataId", "dois_pipe_separated", "title") {
         doWithEachReference(repository) {
-            writeRow(it.wikidataId, it.dois.joinToString("|"))
+            writeRow(it.wikidataId, it.dois.joinToString("|"), it.title ?: "")
         }
     }
 }
 
 fun taxonListToTSV(repository: Repository, file: File) {
-    writeTSVFileWith(file, "wikidataId", "names_pipe_separated", "parent_pipe_separated") {
+    writeTSVFileWith(file, "wikidataId", "names_pipe_separated", "rank", "parent_pipe_separated") {
         doWithEachTaxon(repository) {
-            writeRow(it.wikidataId, it.names.joinToString("|"), it.parents.joinToString("|"))
+            writeRow(it.wikidataId, it.names.joinToString("|"), it.rank ?: "unspecified", it.parents.joinToString("|"))
         }
     }
 }

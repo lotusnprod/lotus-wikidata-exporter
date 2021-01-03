@@ -88,12 +88,17 @@ fun Repository.getAllTaxRanks(query: String = LOTUSQueries.queryTaxoRanksInfo): 
  * @param iris Collection of IRIs
  * @param f Function that will be executed every chunk (useful for logging)
  */
-fun Repository.getEverythingAbout(iris: Collection<IRI>, f: (Int) -> Unit = {}): List<Statement> {
+fun Repository.getEverythingAbout(
+    iris: Collection<IRI>,
+    taxoMode: Boolean = false,
+    f: (Int) -> Unit = {}
+): List<Statement> {
     val list = mutableListOf<Statement>()
+    val query = if (taxoMode) LOTUSQueries.mirrorQueryForTaxo else LOTUSQueries.mirrorQuery
     var count = 0
     iris.chunked(CHUNK_SIZE).map {
         val listOfCompounds = it.map { "wd:${it.getIDFromIRI()}" }.joinToString(" ")
-        val compoundQuery = LOTUSQueries.mirrorQuery.replace("%%IDS%%", listOfCompounds)
+        val compoundQuery = query.replace("%%IDS%%", listOfCompounds)
         Repositories.graphQuery(this, compoundQuery) { result -> list.addAll(result) }
         count += it.size
         f(count)
@@ -118,16 +123,16 @@ fun mirror(repositoryLocation: File) {
     }
 
     logger.info("Querying the local data for all the ids we need")
-    val (irisToMirror, taxasToMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs()
+    val (irisToMirror, taxaToMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs()
 
-    logger.info("We have ${irisToMirror.size} and ${taxasToMirror.size} taxa")
+    logger.info("We have ${irisToMirror.size} and ${taxaToMirror.size} taxa")
 
     logger.info("Getting the taxa relations remotely")
 
-    val newTaxaToMirrorIRIs = sparqlRepository.getTaxaParentIRIs(taxasToMirror)
+    val newTaxaToMirrorIRIs = sparqlRepository.getTaxaParentIRIs(taxaToMirror)
 
     logger.info(
-        "${irisToMirror.size} entries to mirror + ${taxasToMirror.size} for taxa + " +
+        "${irisToMirror.size} entries to mirror + ${taxaToMirror.size} for taxa + " +
             " ${newTaxaToMirrorIRIs.size} for their parents"
     )
 
@@ -139,15 +144,23 @@ fun mirror(repositoryLocation: File) {
         )
     }
 
-    logger.info("Gathering full data about all the compounds, taxa and references")
-    val allIRIs = irisToMirror.toSet() + newTaxaToMirrorIRIs.toSet() + taxasToMirror.toSet()
+    logger.info("Gathering full data about all the taxo")
+    val allIRIsTaxo = newTaxaToMirrorIRIs.toSet() + taxaToMirror.toSet()
+    val fullDataTaxo = sparqlRepository.getEverythingAbout(allIRIsTaxo, taxoMode = true) { count ->
+        logger.info(" $count/${allIRIsTaxo.size} done")
+    }
+
+    logger.info("Gathering full data about all the compounds and references")
+    val allIRIs = irisToMirror.toSet()
     val fullData = sparqlRepository.getEverythingAbout(allIRIs) { count ->
         logger.info(" $count/${allIRIs.size} done")
     }
+
     logger.info("Adding the queried info on all the compounds, taxa and references to the local repository")
     rdfRepository.repository.connection.use {
         it.isolationLevel = IsolationLevels.NONE
         it.add(fullData)
+        it.add(fullDataTaxo)
     }
 
     logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} in the local RDF repository now")

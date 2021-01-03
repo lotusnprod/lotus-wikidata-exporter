@@ -21,18 +21,18 @@ fun doWithEachReference(
         conn.begin(IsolationLevels.NONE) // We are not writing anything
         conn.prepareTupleQuery(
             """
-            SELECT ?article_id ?doi {
+            SELECT ?article_id ?doi ?title {
                 ?article_id <${Wikidata.Properties.instanceOf}> ?type;
                             <${WikidataBibliography.Properties.doi}> ?doi.
+                OPTIONAL { ?article_id <${WikidataBibliography.Properties.title}> ?title. }
             }
             """.trimIndent()
-        ).evaluate().map { bindingSet ->
-            bindingSet.getValue("article_id").stringValue() to bindingSet.getValue("doi").stringValue()
-        }.groupBy { it.first }.forEach { (key, value) ->
+        ).evaluate().groupBy { it.getValue("article_id").stringValue() }.forEach { (key, value) ->
             f(
                 Reference(
                     wikidataId = key,
-                    dois = value.map { it.second }
+                    dois = value.mapNotNull { it.getValue("doi")?.stringValue() },
+                    title = value.mapNotNull { it.getValue("title")?.stringValue() }.firstOrNull()
                 )
             )
         }

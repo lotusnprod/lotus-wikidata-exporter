@@ -9,6 +9,7 @@ package net.nprod.wikidataLotusExporter.rdf.vocabulary
 object WikidataBibliography {
     object Properties {
         val doi = Wikidata.wdt("P356")
+        val title = Wikidata.wdt("P1476")
     }
 
     val scholarlyArticle = Wikidata.wd("Q13442814")

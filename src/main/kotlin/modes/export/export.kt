@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import net.nprod.wikidataLotusExporter.modes.export.formats.compoundReferenceTaxonListToTSV
 import net.nprod.wikidataLotusExporter.modes.export.formats.compoundsToTSV
 import net.nprod.wikidataLotusExporter.modes.export.formats.referenceListToTSV
+import net.nprod.wikidataLotusExporter.modes.export.formats.taxonListToFlatTSV
 import net.nprod.wikidataLotusExporter.modes.export.formats.taxonListToTSV
 import net.nprod.wikidataLotusExporter.rdf.RDFRepository
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
@@ -44,7 +45,7 @@ fun export(repositoryLocation: File, outputDirectory: File, direct: Boolean) = G
 
     launch(Dispatchers.IO) {
         logger.info("Preparing to run the taxa")
-        taxonListToTSV(repository, File(outputDirectory, "taxa.tsv"))
+        taxonListToFlatTSV(repository, File(outputDirectory, "taxa.tsv"))
         logger.info("Finished the taxa")
     }
 
