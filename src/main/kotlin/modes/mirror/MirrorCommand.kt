@@ -12,7 +12,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import net.nprod.wikidataLotusExporter.DEFAULT_REPOSITORY
 import java.io.File
 
-class Mirror : CliktCommand(help = "Mirror Wikidata entries related to LOTUS locally") {
+class MirrorCommand : CliktCommand(help = "Mirror Wikidata entries related to LOTUS locally") {
     private val store by option("-s", "--store", help = "Where the data is going to be stored")
         .default(DEFAULT_REPOSITORY)
 

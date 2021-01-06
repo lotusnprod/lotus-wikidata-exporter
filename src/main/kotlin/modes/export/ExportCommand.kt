@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 import net.nprod.wikidataLotusExporter.DEFAULT_REPOSITORY
 import java.io.File
 
-class Export : CliktCommand(help = "Export LOTUS to… something") {
+class ExportCommand : CliktCommand(help = "Export LOTUS to… something") {
     private val store by option("-s", "--store", help = "Where the data is going to be stored")
         .default(DEFAULT_REPOSITORY)
     private val outputDirectory by option("-o", "--output", help = "Output directory").required()

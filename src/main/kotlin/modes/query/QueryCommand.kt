@@ -15,7 +15,7 @@ import net.nprod.wikidataLotusExporter.DEFAULT_REPOSITORY
 import java.io.File
 import java.io.FileNotFoundException
 
-class Query : CliktCommand(help = "Run a SPARQL SELECT query on the local instance or directly on WD") {
+class QueryCommand : CliktCommand(help = "Run a SPARQL SELECT query on the local instance or directly on WD") {
     private val store by option("-s", "--store", help = "Where the data is going to be stored")
         .default(DEFAULT_REPOSITORY)
     private val outputFilename by option("-o", "--output", help = "Output file")
