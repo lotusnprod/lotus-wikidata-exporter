@@ -125,7 +125,7 @@ fun mirror(repositoryLocation: File) {
     logger.info("Querying the local data for all the ids we need")
     val (irisToMirror, taxaToMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs()
 
-    logger.info("We have ${irisToMirror.size} and ${taxaToMirror.size} taxa")
+    logger.info("We have ${irisToMirror.size} entries and ${taxaToMirror.size} taxa")
 
     logger.info("Getting the taxa relations remotely")
 
@@ -163,5 +163,5 @@ fun mirror(repositoryLocation: File) {
         it.add(fullDataTaxo)
     }
 
-    logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} in the local RDF repository now")
+    logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} entries in the local RDF repository now")
 }
