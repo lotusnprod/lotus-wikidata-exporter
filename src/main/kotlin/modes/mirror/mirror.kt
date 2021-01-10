@@ -163,5 +163,5 @@ fun mirror(repositoryLocation: File) {
         it.add(fullDataTaxo)
     }
 
-    logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} entries in the local RDF repository now")
+    logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} entries in the local repository")
 }
