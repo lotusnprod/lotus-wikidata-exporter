@@ -1,10 +1,14 @@
 #!WDDEFAULTIMPORTS
- SELECT DISTINCT ?taxon_id ?parent_id ?taxon_name ?taxon_rank  ?x ?p ?o {
-              ?taxon_id <http://www.wikidata.org/prop/direct/P225> ?taxon_name;
-                        <http://www.wikidata.org/prop/direct/P105>/rdfs:label ?taxon_rank.
+SELECT DISTINCT ?taxon_id ?parent_id ?taxon_name ?taxon_rank ?lang {
+VALUES ?taxon_id { wd:Q1209254 }
+?taxon_id ?p ?o.
+              ?taxon_id wdt:P225 ?taxon_name.
+              OPTIONAL { ?taxon_id wdt:P105/rdfs:label ?taxon_rank.
+              FILTER ((lang(?taxon_rank) = 'en') || ?taxon_rank = '')
+              }
 
-              ?taxon_id <http://www.wikidata.org/prop/P171> ?x.
-              ?x ?p ?o .
+               ?taxon_id p:P171/ps:P171 ?parent_id.
 
-              FILTER (lang(?taxon_rank) = 'en')
-            } LIMIT 10
+
+             #BIND (lang(?taxon_rank) as ?lang)
+            }

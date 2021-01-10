@@ -21,11 +21,12 @@ fun doWithEachTaxon(repository: Repository, f: (Taxon) -> Unit) {
             ${LOTUSQueries.prefixes}
             SELECT DISTINCT ?taxon_id ?parent_id ?taxon_name ?taxon_rank {
               ?taxon_id <${WikidataTaxonomy.Properties.taxonName}> ?taxon_name;
-                        <${WikidataTaxonomy.Properties.taxonRank}>/rdfs:label ?taxon_rank.
-             
+              OPTIONAL { ?taxon_id <${WikidataTaxonomy.Properties.taxonRank}>/rdfs:label ?taxon_rank.
+                         FILTER (lang(?taxon_rank) = 'en')
+              }
+              
               OPTIONAL { ?taxon_id ${WikidataTaxonomy.Properties.parentTaxonChain} ?parent_id. }
               
-              FILTER (lang(?taxon_rank) = 'en')
             }
             """.trimIndent()
         conn.prepareTupleQuery(query).evaluate().groupBy { it.getValue("taxon_id").stringValue() }
