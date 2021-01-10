@@ -33,7 +33,7 @@ fun doWithEachTaxon(repository: Repository, f: (Taxon) -> Unit) {
                 f(
                     Taxon(
                         wikidataId = key,
-                        names = value.mapNotNull { it.getValue("taxon_name")?.stringValue() },
+                        names = value.mapNotNull { it.getValue("taxon_name")?.stringValue() }.distinct(),
                         rank = value.mapNotNull { it.getValue("taxon_rank")?.stringValue() }.firstOrNull(),
                         parents = value.mapNotNull { it.getValue("parent_id")?.stringValue() }
                     )

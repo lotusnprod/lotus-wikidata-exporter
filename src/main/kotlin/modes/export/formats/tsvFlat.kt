@@ -11,7 +11,7 @@ import org.eclipse.rdf4j.repository.Repository
 import java.io.File
 
 fun taxonListToFlatTSV(repository: Repository, file: File) {
-    writeTSVFileWith(file, "wikidataId", "names_pipe_separated", "rank", "parent_pipe_separated") {
+    writeTSVFileWith(file, "wikidataId", "names_pipe_separated", "rank", "parent") {
         doWithEachTaxon(repository) { taxon ->
             taxon.parents.forEach { parent ->
                 writeRow(
