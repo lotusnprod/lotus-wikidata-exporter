@@ -7,6 +7,7 @@
 package net.nprod.wikidataLotusExporter.modes.export.types
 
 import net.nprod.wikidataLotusExporter.lotus.models.Taxon
+import net.nprod.wikidataLotusExporter.rdf.vocabulary.WikidataChemistry
 import net.nprod.wikidataLotusExporter.rdf.vocabulary.WikidataTaxonomy
 import net.nprod.wikidataLotusExporter.sparql.LOTUSQueries
 import org.eclipse.rdf4j.IsolationLevels
@@ -19,13 +20,14 @@ fun doWithEachTaxon(repository: Repository, f: (Taxon) -> Unit) {
         val query =
             """
             ${LOTUSQueries.prefixes}
-            SELECT DISTINCT ?taxon_id ?parent_id ?taxon_name ?taxon_rank {
-              ?taxon_id <${WikidataTaxonomy.Properties.taxonName}> ?taxon_name;
+            SELECT DISTINCT ?taxon_id ?taxon_name ?taxon_rank {
+              ?something <${WikidataChemistry.Properties.foundInTaxon}> ?taxon_id.
+              ?taxon_id <${WikidataTaxonomy.Properties.taxonName}> ?taxon_name.
               OPTIONAL { ?taxon_id <${WikidataTaxonomy.Properties.taxonRank}>/rdfs:label ?taxon_rank.
                          FILTER (lang(?taxon_rank) = 'en')
               }
               
-              OPTIONAL { ?taxon_id ${WikidataTaxonomy.Properties.parentTaxonChain} ?parent_id. }
+              #OPTIONAL { ?taxon_id ${WikidataTaxonomy.Properties.parentTaxonChain} ?parent_id. }
               
             }
             """.trimIndent()
@@ -35,8 +37,7 @@ fun doWithEachTaxon(repository: Repository, f: (Taxon) -> Unit) {
                     Taxon(
                         wikidataId = key,
                         names = value.mapNotNull { it.getValue("taxon_name")?.stringValue() }.distinct(),
-                        rank = value.mapNotNull { it.getValue("taxon_rank")?.stringValue() }.firstOrNull(),
-                        parents = value.mapNotNull { it.getValue("parent_id")?.stringValue() }
+                        rank = value.mapNotNull { it.getValue("taxon_rank")?.stringValue() }.firstOrNull()
                     )
                 )
             }

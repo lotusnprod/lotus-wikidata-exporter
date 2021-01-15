@@ -41,9 +41,9 @@ fun referenceListToTSV(repository: Repository, file: File) {
 }
 
 fun taxonListToTSV(repository: Repository, file: File) {
-    writeTSVFileWith(file, "wikidataId", "names_pipe_separated", "rank", "parent_pipe_separated") {
+    writeTSVFileWith(file, "wikidataId", "names_pipe_separated", "rank") {
         doWithEachTaxon(repository) {
-            writeRow(it.wikidataId, it.names.joinToString("|"), it.rank ?: "unspecified", it.parents.joinToString("|"))
+            writeRow(it.wikidataId, it.names.joinToString("|"), it.rank ?: "unspecified")
         }
     }
 }

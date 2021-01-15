@@ -8,7 +8,6 @@ package net.nprod.wikidataLotusExporter.rdf.vocabulary
 
 object WikidataTaxonomy {
     object Properties {
-        val foundInTaxon = Wikidata.wdt("P703")
         val taxonName = Wikidata.wdt("P225")
         val taxonRank = Wikidata.wdt("P105")
         val parentTaxon = Wikidata.wdt("P171")

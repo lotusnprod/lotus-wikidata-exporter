@@ -8,6 +8,7 @@ package net.nprod.wikidataLotusExporter.rdf.vocabulary
 
 object WikidataChemistry {
     object Properties {
+        val foundInTaxon = Wikidata.wdt("P703")
         val isomericSmiles = Wikidata.wdt("P2017")
         val canonicalSmiles = Wikidata.wdt("P233")
         val inchi = Wikidata.wdt("P234")
