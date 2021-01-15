@@ -37,7 +37,7 @@ fun Repository.addEntriesFromConstruct(query: String = LOTUSQueries.queryCompoun
 typealias IRISET = Set<IRI>
 typealias TAXAIRISET = Set<IRI>
 
-fun Repository.getIRIsAndTaxaIRIs(logger: Logger): Pair<IRISET, TAXAIRISET> {
+fun Repository.getIRIsAndTaxaIRIs(logger: Logger? = null): Pair<IRISET, TAXAIRISET> {
     val irisToMirror = mutableSetOf<IRI>()
     val taxasToParentMirror = mutableSetOf<IRI>()
     // We add all the ids to a set so we can mirror them
@@ -54,7 +54,7 @@ fun Repository.getIRIsAndTaxaIRIs(logger: Logger): Pair<IRISET, TAXAIRISET> {
             }
         )
     }
-    logger.info(" We found $count LOTUS triplets")
+    logger?.info(" We found $count LOTUS triplets")
     return Pair(irisToMirror.toSet(), taxasToParentMirror.toSet())
 }
 
