@@ -15,6 +15,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult
 import org.eclipse.rdf4j.repository.Repository
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository
 import org.eclipse.rdf4j.repository.util.Repositories
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -36,10 +37,11 @@ fun Repository.addEntriesFromConstruct(query: String = LOTUSQueries.queryCompoun
 typealias IRISET = Set<IRI>
 typealias TAXAIRISET = Set<IRI>
 
-fun Repository.getIRIsAndTaxaIRIs(): Pair<IRISET, TAXAIRISET> {
+fun Repository.getIRIsAndTaxaIRIs(logger: Logger): Pair<IRISET, TAXAIRISET> {
     val irisToMirror = mutableSetOf<IRI>()
     val taxasToParentMirror = mutableSetOf<IRI>()
     // We add all the ids to a set so we can mirror them
+    var count = 0
     Repositories.tupleQuery(this, LOTUSQueries.queryIdsLocal) { result: TupleQueryResult ->
         irisToMirror.addAll(
             result.flatMap { bindingSet ->
@@ -47,10 +49,12 @@ fun Repository.getIRIsAndTaxaIRIs(): Pair<IRISET, TAXAIRISET> {
                 val taxonID: IRI = bindingSet.getBinding("taxon_id").value as IRI
                 val referenceID: IRI = bindingSet.getBinding("reference_id").value as IRI
                 taxasToParentMirror.add(taxonID)
-                listOf(compoundID, taxonID, referenceID)
+                count++
+                listOf(compoundID, referenceID)
             }
         )
     }
+    logger.info(" We found $count LOTUS triplets")
     return Pair(irisToMirror.toSet(), taxasToParentMirror.toSet())
 }
 
@@ -123,7 +127,7 @@ fun mirror(repositoryLocation: File) {
     }
 
     logger.info("Querying the local data for all the ids we need")
-    val (irisToMirror, taxaToMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs()
+    val (irisToMirror, taxaToMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs(logger)
 
     logger.info("We have ${irisToMirror.size} entries and ${taxaToMirror.size} taxa")
 
@@ -132,7 +136,7 @@ fun mirror(repositoryLocation: File) {
     val newTaxaToMirrorIRIs = sparqlRepository.getTaxaParentIRIs(taxaToMirror)
 
     logger.info(
-        "${irisToMirror.size} entries to mirror + ${taxaToMirror.size} for taxa + " +
+        "${irisToMirror.size} entries to mirror including ${taxaToMirror.size} for taxa + " +
             " ${newTaxaToMirrorIRIs.size} for their parents"
     )
 

@@ -35,7 +35,7 @@ internal class IntegrationTest {
     @Test
     @Order(2)
     fun `Query local data for all the ids, check that we have both taxa and entries`() {
-        val (irisToMirror, taxasToParentMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs()
+        val (irisToMirror, taxasToParentMirror) = rdfRepository.repository.getIRIsAndTaxaIRIs(logger)
         assert(irisToMirror.isNotEmpty())
         assert(taxasToParentMirror.isNotEmpty())
     }
