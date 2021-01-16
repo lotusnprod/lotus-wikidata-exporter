@@ -14,6 +14,7 @@ repositories {
     mavenCentral()
     jcenter()
     maven("https://kotlin.bintray.com/kotlinx")
+    maven("https://dl.bintray.com/bjonnh/Konnector")
 }
 
 application {
@@ -33,6 +34,7 @@ dependencies {
     val cliktVersion: String by project
     val univocityParserVersion: String by project
     val coroutinesVersion: String by project
+    val konnectorVersion: String by project
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
@@ -44,6 +46,8 @@ dependencies {
     implementation("org.eclipse.rdf4j:rdf4j-sail-nativerdf:$rdf4jVersion")
     implementation("org.eclipse.rdf4j:rdf4j-core:$rdf4jVersion")
     implementation("org.eclipse.rdf4j:rdf4j-client:$rdf4jVersion")
+
+    implementation("net.nprod:konnector:$konnectorVersion")
 
     implementation("org.apache.logging.log4j:log4j-api:$log4jVersion")
     implementation("org.apache.logging.log4j:log4j-core:$log4jVersion")

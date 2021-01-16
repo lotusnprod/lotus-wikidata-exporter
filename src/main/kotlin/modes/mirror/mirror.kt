@@ -168,4 +168,7 @@ fun mirror(repositoryLocation: File) {
     }
 
     logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} entries in the local repository")
+
+    logger.info("Loading OTOL data (if existing)")
+
 }
