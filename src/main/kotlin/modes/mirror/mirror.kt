@@ -71,7 +71,15 @@ fun Repository.getTaxaParentIRIs(taxasToParentMirror: TAXAIRISET): Set<IRI> {
         val modifiedQuery = LOTUSQueries.queryTaxonParents.replace("%%IDS%%", listOfTaxa)
         Repositories.tupleQuery(this, modifiedQuery) { result: TupleQueryResult ->
             newIRIsToMirror.addAll(
-                result.map { bindingSet -> bindingSet.getBinding("parenttaxon_id").value as IRI }
+                result.mapNotNull { bindingSet ->
+                    when (val value = bindingSet.getBinding("parenttaxon_id").value) {
+                        is IRI -> value
+                        else -> {  // In two cases we have parenttaxon_id that returns a blank node, we just ignore those two
+                            println("Incorrect value $value")
+                            null
+                        }
+                    }
+                }
             )
         }
     }
@@ -85,6 +93,16 @@ fun Repository.getAllTaxRanks(query: String = LOTUSQueries.queryTaxoRanksInfo): 
     }
     return list
 }
+
+/**
+ * Get all the compounds that have a found in taxon
+ */
+fun Repository.getAllCompoundsID(query: String = LOTUSQueries.queryCompoundsOfInterest): Set<IRI> =
+    mutableSetOf<IRI>().also { set ->
+        Repositories.tupleQuery(this, query) { result ->
+            set.addAll(result.map { it.getBinding("compound_id").value as IRI })
+        }
+    }
 
 /**
  * Get all the information about the given IRIs
@@ -110,6 +128,30 @@ fun Repository.getEverythingAbout(
     return list
 }
 
+/**
+ * Get the taxa and refs for the given compound IRIs
+ *
+ * @param iris Collection of compounds IRIs
+ * @param f Function that will be executed every chunk (useful for logging)
+ */
+fun Repository.getTaxaAndRefsAboutGivenCompounds(
+    iris: Collection<IRI>,
+    chunkSize: Int = CHUNK_SIZE,
+    f: (Int) -> Unit = {}
+): List<Statement> {
+    val list = mutableListOf<Statement>()
+    val query = LOTUSQueries.queryCompoundTaxonRefModularForCompoundIds
+    var count = 0
+    iris.chunked(chunkSize).map {
+        val listOfCompounds = it.map { "wd:${it.getIDFromIRI()}" }.joinToString(" ")
+        val compoundQuery = query.replace("%%IDS%%", listOfCompounds)
+        Repositories.graphQuery(this, compoundQuery) { result -> list.addAll(result) }
+        count += it.size
+        f(count)
+    }
+    return list
+}
+
 fun mirror(repositoryLocation: File) {
     val logger = LoggerFactory.getLogger("mirror")
     val sparqlRepository = SPARQLRepository("https://query.wikidata.org/sparql")
@@ -117,8 +159,15 @@ fun mirror(repositoryLocation: File) {
 
     logger.info("Starting in mirroring mode into the repository: $repositoryLocation")
 
+    logger.info("Querying Wikidata for the compounds having a found in taxon")
+    val compoundsIRIList = sparqlRepository.getAllCompoundsID()
+
+    logger.info("We found ${compoundsIRIList.size} compounds")
+
     logger.info("Querying Wikidata for all the triplets taxon-compound-reference")
-    val fullEntries = sparqlRepository.addEntriesFromConstruct()
+    val fullEntries = sparqlRepository.getTaxaAndRefsAboutGivenCompounds(compoundsIRIList, chunkSize = CHUNK_SIZE * 10) {
+        logger.info(" ${100*it/compoundsIRIList.size}%")
+    }
 
     logger.info("Adding the data to our local repository")
     rdfRepository.repository.connection.use {
@@ -170,5 +219,4 @@ fun mirror(repositoryLocation: File) {
     logger.info("We have ${rdfRepository.repository.connection.use { it.size() }} entries in the local repository")
 
     logger.info("Loading OTOL data (if existing)")
-
 }
