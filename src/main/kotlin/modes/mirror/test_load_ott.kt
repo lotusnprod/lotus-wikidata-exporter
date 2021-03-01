@@ -15,16 +15,8 @@ import net.nprod.wikidataLotusExporter.rdf.vocabulary.WikidataTaxonomy
 import java.io.File
 import kotlin.time.ExperimentalTime
 
-data class TaxonData(
-    val name: String,
-    val wikidataId: String,
-    val irmngId: String?,
-    val gbifId: String?,
-    val ncbiId: String?,
-    val wormsId: String?
-)
-
 @ExperimentalTime
+@Suppress("LongMethod", "NestedBlockDepth")
 fun main() {
     val rdfRepository = RDFRepository(File("data/local_rdf"))
     val otolConnector = OtolConnector(OfficialOtolAPI())
@@ -44,7 +36,7 @@ fun main() {
                 ?taxon_id <${Lotus.Properties.otolID}> ?otolId.
               }
             }
-        """.trimIndent()
+            """.trimIndent()
         ).evaluate()
         wikidataTaxa = result.map {
             val name = it.getValue("taxon_name").stringValue()
@@ -86,26 +78,28 @@ fun main() {
             }
         }*/
 
-        val withGBIF = (wikidataTaxa - withIRMNG).filter { it.gbifId != null}.toSet()
+        val withGBIF = (wikidataTaxa - withIRMNG).filter { it.gbifId != null }.toSet()
         println("We have ${withGBIF.size} with a GBIF")
 
-        val withNCBI = (wikidataTaxa - withIRMNG - withGBIF).filter { it.ncbiId != null}.toSet()
+        val withNCBI = (wikidataTaxa - withIRMNG - withGBIF).filter { it.ncbiId != null }.toSet()
         println("We have ${withNCBI.size} with a NCBI")
 
-        val withWORMS = (wikidataTaxa - withIRMNG - withGBIF - withNCBI).filter { it.wormsId != null}.toSet()
+        val withWORMS = (wikidataTaxa - withIRMNG - withGBIF - withNCBI).filter { it.wormsId != null }.toSet()
         println("We have ${withWORMS.size} with a WORMS")
 
         val withoutId = (wikidataTaxa - withIRMNG - withGBIF - withNCBI - withWORMS)
         println("We have ${withoutId.size} without IDs")
         println(withoutId)
-        otolConnector.tnrs.matchNames(withoutId.map { it.name } ).results.forEach {
+        otolConnector.tnrs.matchNames(withoutId.map { it.name }).results.forEach {
             val matched = it.matches.filter {
-                (setOf(
-                    "extinct",
-                    "merged",
-                    "sibling_higher",
-                    "incertae_sedis"
-                ).intersect(it.taxon.flags)).isEmpty()
+                (
+                    setOf(
+                        "extinct",
+                        "merged",
+                        "sibling_higher",
+                        "incertae_sedis"
+                    ).intersect(it.taxon.flags)
+                    ).isEmpty()
             }
             if (matched.size > 1) {
                 println("${it.name}")

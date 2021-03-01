@@ -25,6 +25,7 @@ fun IRI.getIDFromIRI(): String = this.stringValue().split("/").last()
  * Size of the blocks of values for each SPARQL query
  */
 const val CHUNK_SIZE = 4000
+const val LARGE_CHUNK_SIZE = CHUNK_SIZE * 10
 
 fun Repository.addEntriesFromConstruct(query: String = LOTUSQueries.queryCompoundTaxonRef): List<Statement> {
     val list = mutableListOf<Statement>()
@@ -74,7 +75,7 @@ fun Repository.getTaxaParentIRIs(taxasToParentMirror: TAXAIRISET): Set<IRI> {
                 result.mapNotNull { bindingSet ->
                     when (val value = bindingSet.getBinding("parenttaxon_id").value) {
                         is IRI -> value
-                        else -> {  // In two cases we have parenttaxon_id that returns a blank node, we just ignore those two
+                        else -> { // In two cases we have parenttaxon_id being a blank node, we just ignore those two
                             println("Incorrect value $value")
                             null
                         }
@@ -152,6 +153,7 @@ fun Repository.getTaxaAndRefsAboutGivenCompounds(
     return list
 }
 
+@Suppress("MagicNumber")
 fun mirror(repositoryLocation: File) {
     val logger = LoggerFactory.getLogger("mirror")
     val sparqlRepository = SPARQLRepository("https://query.wikidata.org/sparql")
@@ -165,8 +167,11 @@ fun mirror(repositoryLocation: File) {
     logger.info("We found ${compoundsIRIList.size} compounds")
 
     logger.info("Querying Wikidata for all the triplets taxon-compound-reference")
-    val fullEntries = sparqlRepository.getTaxaAndRefsAboutGivenCompounds(compoundsIRIList, chunkSize = CHUNK_SIZE * 10) {
-        logger.info(" ${100*it/compoundsIRIList.size}%")
+    val fullEntries = sparqlRepository.getTaxaAndRefsAboutGivenCompounds(
+        compoundsIRIList,
+        chunkSize = LARGE_CHUNK_SIZE
+    ) {
+        logger.info(" ${100 * it / compoundsIRIList.size}%")
     }
 
     logger.info("Adding the data to our local repository")
@@ -199,7 +204,10 @@ fun mirror(repositoryLocation: File) {
 
     logger.info("Gathering full data about all the taxo")
     val allIRIsTaxo = newTaxaToMirrorIRIs.toSet() + taxaToMirror.toSet()
-    val fullDataTaxo = sparqlRepository.getEverythingAbout(allIRIsTaxo, taxoMode = true) { count ->
+    val fullDataTaxo = sparqlRepository.getEverythingAbout(
+        allIRIsTaxo,
+        taxoMode = true
+    ) { count ->
         logger.info(" $count/${allIRIsTaxo.size} done")
     }
 
