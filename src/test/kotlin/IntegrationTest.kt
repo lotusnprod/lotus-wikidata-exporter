@@ -55,7 +55,7 @@ internal class IntegrationTest {
     @Test
     fun `Get everything about something`() {
         val iri = sparqlRepository.valueFactory.createIRI("http://www.wikidata.org/entity/Q1549545")
-        assert(sparqlRepository.getEverythingAbout(setOf(iri)).isNotEmpty())
+        assert(sparqlRepository.getEverythingAbout(setOf(iri), channel = channelStatements).isNotEmpty())
     }
 
     companion
