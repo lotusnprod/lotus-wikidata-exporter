@@ -216,7 +216,6 @@ fun mirror(repositoryLocation: File) = runBlocking<Unit> {
         logger.info("Getting the taxonomic ranks info")
         channelStatements.send(sparqlRepository.getAllTaxRanks())
 
-
         logger.info("Gathering full data about all the taxo")
         val allIRIsTaxo = newTaxaToMirrorIRIs.toSet() + taxaToMirror.toSet()
         sparqlRepository.getEverythingAbout(

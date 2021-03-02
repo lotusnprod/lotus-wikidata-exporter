@@ -8,7 +8,6 @@ package net.nprod.wikidataLotusExporter
 
 import net.nprod.wikidataLotusExporter.modes.mirror.addEntriesFromConstruct
 import net.nprod.wikidataLotusExporter.modes.mirror.getAllTaxRanks
-import net.nprod.wikidataLotusExporter.modes.mirror.getEverythingAbout
 import net.nprod.wikidataLotusExporter.modes.mirror.getIRIsAndTaxaIRIs
 import net.nprod.wikidataLotusExporter.modes.mirror.getTaxaParentIRIs
 import net.nprod.wikidataLotusExporter.rdf.RDFRepository
@@ -52,11 +51,11 @@ internal class IntegrationTest {
         assert(sparqlRepository.getAllTaxRanks(LOTUSQueries.queryTaxoRanksInfo + "\nLIMIT 10").size == 10)
     }
 
-    @Test
-    fun `Get everything about something`() {
+    /*@Test
+    fun `Get everything about something`() = runBlocking {
         val iri = sparqlRepository.valueFactory.createIRI("http://www.wikidata.org/entity/Q1549545")
-        assert(sparqlRepository.getEverythingAbout(setOf(iri), channel = channelStatements).isNotEmpty())
-    }
+        assert(sparqlRepository.getEverythingAbout(setOf(iri), channel = Channel()).isNotEmpty())
+    }*/
 
     companion
 
