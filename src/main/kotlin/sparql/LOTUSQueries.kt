@@ -34,20 +34,14 @@ object LOTUSQueries {
     val queryCompoundTaxonRefModularForCompoundIds =
         """$prefixes
         CONSTRUCT {
-            ?compound_id    wdt:P31 ?type;
-                            wdt:P703 ?taxon_id;
-                            wdt:P235 ?inchikey;
+            ?compound_id    wdt:P703 ?taxon_id;
                             p:P703 ?pp703.
             ?pp703          ps:P703 ?taxon_id;
                             prov:wasDerivedFrom ?derived.
-           
             ?derived        pr:P248 ?reference_id.
         }
         WHERE {
-            ?compound_id     wdt:P235 ?inchikey;
-                             p:P703 ?pp703;
-                             wdt:P31 ?type.
-
+            ?compound_id     p:P703 ?pp703.
             ?pp703           ps:P703 ?taxon_id;
                              prov:wasDerivedFrom ?derived.
             ?derived         pr:P248 ?reference_id.
@@ -83,13 +77,9 @@ object LOTUSQueries {
         """$prefixes
         SELECT ?compound_id ?taxon_id ?reference_id
         WHERE {
-            ?compound_id     p:P703 ?pp703;
-                             wdt:P31 ?type.
-
+            ?compound_id     p:P703 ?pp703.
             ?pp703           ps:P703 ?taxon_id;
                              prov:wasDerivedFrom/pr:P248 ?reference_id.
-
-            #VALUES ?type { wd:Q11173 wd:Q43460564 wd:Q59199015 } # chemical entity or group of stereoisomers
         }
         """.trimIndent()
 
@@ -127,12 +117,26 @@ object LOTUSQueries {
         }
         """.trimIndent()
 
-    val mirrorQuery =
+    val mirrorQueryForCompound =
         """$prefixes
         CONSTRUCT {
             ?id ?p ?o.
         } WHERE { 
             VALUES ?id { %%IDS%% }
+            VALUES ?p { wdt:P31 wdt:P274 wdt:P233 wdt:P2017 wdt:P703
+             wdt:P234 wdt:P235 wdt:P662 }
+            ?id ?p ?o.
+        }
+        """.trimIndent()
+
+    val mirrorQueryForReference =
+        """$prefixes
+        CONSTRUCT {
+            ?id ?p ?o.
+        } WHERE { 
+            VALUES ?id { %%IDS%% }
+            VALUES ?p { wdt:P31 wdt:P1476 wdt:P2093 wdt:P407 wdt:P577 wdt:P1433 
+            wdt:P478 wdt:P304 wdt:P433 wdt:P356 wdt:P698 wdt:P5875 }
             ?id ?p ?o.
         }
         """.trimIndent()
