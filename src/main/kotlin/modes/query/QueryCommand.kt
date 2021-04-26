@@ -16,7 +16,7 @@ import java.io.File
 import java.io.FileNotFoundException
 
 class QueryCommand : CliktCommand(help = "Run a SPARQL SELECT query on the local instance or directly on WD") {
-    private val store by option("-s", "--store", help = "Where the data is going to be stored")
+    private val store by option("-s", "--store", help = "Where the triplestore is")
         .default(DEFAULT_REPOSITORY)
     private val outputFilename by option("-o", "--output", help = "Output file")
     private val direct by option(
