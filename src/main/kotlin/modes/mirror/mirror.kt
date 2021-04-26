@@ -29,7 +29,7 @@ fun IRI.getIDFromIRI(): String = this.stringValue().split("/").last()
  * Size of the blocks of values for each SPARQL query
  */
 const val CHUNK_SIZE = 4000
-const val LARGE_CHUNK_SIZE = CHUNK_SIZE * 10
+const val LARGE_CHUNK_SIZE = CHUNK_SIZE
 
 fun Repository.addEntriesFromConstruct(query: String = LOTUSQueries.queryCompoundTaxonRef): List<Statement> {
     val list = mutableListOf<Statement>()
@@ -142,7 +142,7 @@ suspend fun Repository.getEverythingAbout(
  * @param iris Collection of compounds IRIs
  * @param f Function that will be executed every chunk (useful for logging)
  */
-suspend fun Repository.getTaxaAndRefsAboutGivenCompounds(
+suspend fun Repository.getAndLoadTaxaAndRefsAboutGivenCompounds(
     iris: Collection<IRI>,
     chunkSize: Int = CHUNK_SIZE,
     channel: Channel<List<Statement>>,
@@ -153,8 +153,10 @@ suspend fun Repository.getTaxaAndRefsAboutGivenCompounds(
     var count = 0
     iris.chunked(chunkSize).map {
         val listOfCompounds = it.map { "wd:${it.getIDFromIRI()}" }.joinToString(" ")
+
         val compoundQuery = query.replace("%%IDS%%", listOfCompounds)
         var statementList: List<Statement> = listOf()
+
         Repositories.graphQuery(this, compoundQuery) { result -> statementList = result.map { it } }
         count += it.size
         channel.send(statementList)
@@ -188,13 +190,11 @@ fun mirror(repositoryLocation: File) = runBlocking<Unit> {
         logger.info("Querying Wikidata for the compounds having a found in taxon")
         val compoundsIRIList = sparqlRepository.getAllCompoundsID()
 
-        logger.info("We found ${compoundsIRIList.size} compounds")
-
-        logger.info("Querying Wikidata for all the triplets taxon-compound-reference")
-        sparqlRepository.getTaxaAndRefsAboutGivenCompounds(
+        logger.info("Querying Wikidata for all the triplets taxon-compound-reference and store them")
+        sparqlRepository.getAndLoadTaxaAndRefsAboutGivenCompounds(
             compoundsIRIList,
             channel = channelStatements,
-            chunkSize = LARGE_CHUNK_SIZE
+            chunkSize = CHUNK_SIZE
         ) {
             logger.info(" ${100 * it / compoundsIRIList.size}%")
         }
@@ -232,6 +232,7 @@ fun mirror(repositoryLocation: File) = runBlocking<Unit> {
             logger.info(" $count/${allIRIs.size} done")
         }
 
+        logger.info("Finishing sending everything to the local store.")
         channelStatements.close()
     }
 

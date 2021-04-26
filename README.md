@@ -15,7 +15,7 @@ It is made in Kotlin. All you need really is a JVM, and it should gather everyth
 
 ### Gather WikiData entries related to LOTUS locally
 
-This can take a variable amount of time depending on how loaded the WikiData servers are. On good days it is < 5 min
+This can take a variable amount of time depending on how loaded the WikiData servers are. On good days it is < 10 min
 
 ````
 ./gradlew -q run --args "mirror"

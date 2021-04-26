@@ -36,6 +36,7 @@ object LOTUSQueries {
         CONSTRUCT {
             ?compound_id    wdt:P31 ?type;
                             wdt:P703 ?taxon_id;
+                            wdt:P235 ?inchikey;
                             p:P703 ?pp703.
             ?pp703          ps:P703 ?taxon_id;
                             prov:wasDerivedFrom ?derived.
