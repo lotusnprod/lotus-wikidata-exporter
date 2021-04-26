@@ -14,7 +14,7 @@ repositories {
     mavenCentral()
     jcenter()
     maven("https://kotlin.bintray.com/kotlinx")
-    maven("https://dl.bintray.com/bjonnh/Konnector")
+    maven("https://s01.oss.sonatype.org/content/groups/public")
 }
 
 application {
@@ -60,14 +60,14 @@ dependencies {
 }
 
 tasks.withType<JavaCompile> {
-    sourceCompatibility = "11"
-    targetCompatibility = "11"
+    sourceCompatibility = "15"
+    targetCompatibility = "15"
     options.encoding = "UTF-8"
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "15"
         freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
     }
 }
