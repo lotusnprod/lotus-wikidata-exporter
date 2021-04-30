@@ -22,7 +22,7 @@ fun doWithEachTaxon(repository: Repository, f: (Taxon) -> Unit) {
             ${LOTUSQueries.prefixes}
             SELECT DISTINCT ?taxon_id ?taxon_name ?taxon_rank {
               ?something <${WikidataChemistry.Properties.foundInTaxon}> ?taxon_id.
-              ?taxon_id <${WikidataTaxonomy.Properties.taxonName}> ?taxon_name.
+              OPTIONAL { ?taxon_id <${WikidataTaxonomy.Properties.taxonName}> ?taxon_name. } # because of Q1865281 
               OPTIONAL { ?taxon_id <${WikidataTaxonomy.Properties.taxonRank}>/rdfs:label ?taxon_rank.
                          FILTER (lang(?taxon_rank) = 'en')
               }
