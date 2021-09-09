@@ -3,7 +3,7 @@
 This project is used to take the LOTUS (and beyond) data from Wikidata and export it in a format
 that can be used by our website.
 
-It is made in Kotlin. All you need really is a JVM, and it should gather everything by itself.
+It is made in Kotlin. All you need really is a JVM (Java >=15), and it should gather everything by itself.
 
 ## Build
 
