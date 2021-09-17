@@ -1,7 +1,7 @@
 # wikidata Lotus Exporter
 
-This project is used to take the LOTUS (and beyond) data from Wikidata and export it in a format
-that can be used by our website.
+This project is used to take the LOTUS (and beyond) data from Wikidata and export it in a format that can be used by our
+website.
 
 It is made in Kotlin. All you need really is a JVM (Java >=15), and it should gather everything by itself.
 
@@ -23,13 +23,12 @@ This can take a variable amount of time depending on how loaded the WikiData ser
 
 ### Export entries to TSV
 
-This will export in tsv files in data/output. We have 4 files: references.tsv, compounds.tsv, taxa.tsv
-and a file that contains the triples linking these: /compound_reference_taxon.tsv/
+This will export in tsv files in data/output. We have 4 files: references.tsv, compounds.tsv, taxa.tsv and a file that
+contains the triples linking these: /compound_reference_taxon.tsv/
 
 ````
 ./gradlew -q run --args "export -o data/output"
 ````
-
 
 ### Running a query on your new local base
 
@@ -47,15 +46,14 @@ There is also a way to do the query directly on WikiData
 ./gradlew -q run --args "query -d $PWD/queries/getAllCompoundsInChIKeys.sparql"
 ````
 
-
 ## Installing and deploying on another machine
 
 ````
 ./gradlew assembleDist
 ````
 
-This will produce several files in *build/distributions*. Uncompress the one you want somewhere and
- you can just run it on any machine that has a JDK like that:
+This will produce several files in *build/distributions*. Uncompress the one you want somewhere and you can just run it
+on any machine that has a JDK like that:
 
 ````
 ./bin/wikidataLotusExporter mirror
